@@ -390,6 +390,20 @@ const T = {
     if (asDec) { const v = a / b; const s = String(v); if (s.length > 5) return null; return { q: `${a}:${b}의 비율을 소수로 나타내면?`, a: s }; }
     const g = gcd(a, b); return { q: `${a}:${b}의 비율을 기약분수로 나타내면?`, a: `${a / g}/${b / g}`, d: [`${b / g}/${a / g}`, `${a}/${a + b}`, `${b}/${a + b}`].filter((v, i, arr) => v !== `${a / g}/${b / g}` && arr.indexOf(v) === i).slice(0, 3) };
   },
+  // 6-2 문장제(2026-10-10) — 6-2 는 문장제가 백분율 한 틀(280문항)뿐이라 후반 난이도 램프가 경계선(0.80)이었다 → 비례배분·할인 생활 문장
+  w62Share: () => {
+    const a = ri(1, 7); let b = ri(1, 7); if (a === b || gcd(a, b) !== 1) return null;
+    const n1 = pick(NAMES); let n2 = pick(NAMES); if (n1 === n2) return null;
+    const it = pick(SHOP_ITEMS), u = ri(3, 25), total = (a + b) * u;
+    return { q: `${it} ${total}개를 ${n1}${wa(n1)} ${n2}${iga(n2)} ${a}:${b}${numEuro(b)} 나누어 가지면 ${n2}${eunNeun(n2)} 몇 개를 가질까요?`, a: String(b * u) };
+  },
+  w62Sale: () => {
+    // 물건마다 현실 가격대(천 원 단위) — 「필통 12만 원」 같은 값이 안 나오게
+    const [it, lo, hi] = pick([["운동화", 30, 90], ["가방", 20, 80], ["필통", 3, 15], ["자전거 헬멧", 20, 60], ["책상 의자", 40, 120], ["보드게임", 15, 50]]);
+    const p = pick([10, 20, 25, 30, 40, 50]), price = ri(lo, hi) * 1000;
+    const pay = price - (price * p) / 100; if (pay !== Math.floor(pay)) return null;
+    return { q: `${price}원짜리 ${it}${eul(it)} ${p}% 할인해서 사면 얼마를 내야 하나요? (원)`, a: String(pay) };
+  },
   proportion: () => { const a = ri(2, 12), b = ri(2, 12), k = ri(2, 9); if (a === b) return null; return { q: `${a}:${b} = ${a * k}:□, □는?`, a: String(b * k) }; },
   propShare: () => { const a = ri(1, 7); let b = ri(1, 7); if (a === b || gcd(a, b) !== 1) return null; const u = ri(2, 30); const total = (a + b) * u; return { q: `${total}개${eul("개")} ${a}:${b}${numEuro(b)} 나누면 큰 쪽은 몇 개?`, a: String(Math.max(a, b) * u) }; },
   cuboidVol: () => { const a = ri(2, 12), b = ri(2, 12), c = ri(2, 12); return { q: `가로 ${a}cm, 세로 ${b}cm, 높이 ${c}cm 직육면체의 부피는? (cm³)`, a: String(a * b * c) }; },
@@ -636,7 +650,7 @@ const SEMESTERS = {
   "6-2": [
     [T.decDivDec, 560, 2, "decdiv"],
     [T.discount, 400, 2, "percent"],
-    [T.ratio, 240, 2, "prop"],   // 간단한 비(비의 성질) — 2026-10-10 6-1 에서 옮김(공식 연결표)
+    [T.ratio, 100, 2, "prop"],   // 간단한 비(비의 성질) — 2026-10-10 6-1 에서 옮김(공식 연결표)
     [T.proportion, 400, 2, "prop"],
     [T.propShare, 320, 2, "prop"],
     [T.circumference, 42, 3, "circle"],
@@ -646,6 +660,8 @@ const SEMESTERS = {
     [T.speedTime, 130, 3, "speed"],
     [T.cylinderCone, 76, 3, "cyl"],
     [T.wordPercent, 280, 4, "word"],
+    [T.w62Share, 180, 4, "word"],
+    [T.w62Sale, 160, 4, "word"],
   ],
 };
 
