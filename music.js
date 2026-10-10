@@ -759,7 +759,8 @@ export class MusicSystem {
   // --- Scheduler ---
 
   _startScheduler() {
-    const track = TRACKS[this.currentTrack];
+    // 파일 곡이 없는 이름(gameplay-canyon 등)은 절차 합성 폴백이 «gameplay» 로 — 없으면 무음이 된다
+    const track = TRACKS[this.currentTrack] || TRACKS[String(this.currentTrack).split("-")[0]];
     if (!track) return;
     // 이미 돌고 있으면 그 타이머를 먼저 거둔다. 안 그러면 참조를 잃은 setInterval이
     // 영원히 남아(_stopScheduler는 "지금 아는" 타이머만 끈다) 저사양 기기에서

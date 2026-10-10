@@ -357,6 +357,7 @@ let tileIndex = []; // { el, x, y, cx, cy } — 타일 생성 시 1회 구축
 let lastFocusScanPos = { x: -9999, y: -9999 };
 const BUILD_REACH = 46; // 타일 중심에서 이 거리(px) 안이면 건설 가능
 let lastActionHint = "";
+let battleTrack = "gameplay";   // 배경 테마별 전투 곡(initializeGame 이 정한다)
 let actionHintAt = 0;
 const HINT_TOUCH_MS = 3500;
 
@@ -933,6 +934,7 @@ window.addEventListener("DOMContentLoaded", () => {
       // (안 보이면 게이트가 그 회귀를 못 잡는다 — 실제로 교차검증이 그 사각지대를 지적했다)
       spellCooldowns: { ...wizardCooldowns },
       wizard: { x: Math.round(wizardPosition.x), y: Math.round(wizardPosition.y) }, buildStep,   // 폰 조작 QA(tools/qa-touchpad.mjs)
+      bgm: { track: musicSystem.currentTrack, src: musicSystem._trackEl?.src?.split('/').pop() || null, t: musicSystem._trackEl?.currentTime || 0, paused: musicSystem._trackEl ? musicSystem._trackEl.paused : null, synth: !!musicSystem.schedulerTimer },   // 테마 BGM QA(tools/qa-bgm-theme.mjs)
       autoCooldownUntil: WIZARD_AUTO_ATTACK_STATS.cooldownUntil || 0,
     }),
     // 폰 배치 QA(tools/qa-phone-layout.mjs): 길 끝점·성 상자·실제로 그린 성 영역·축척
@@ -1326,6 +1328,8 @@ async function initializeGame(difficulty, savedState = null) {
   // v5: 학년별 AI 배경 (없으면 기존 CSS 배경 유지)
   {
     const bgKey = { 3: "bg_meadow", 4: "bg_meadow", 5: "bg_canyon", 6: "bg_volcano" }[parseInt(difficulty, 10)];
+    // 전투 BGM 도 배경 테마를 따른다(2026-10-10 «bgm 몇 개 넣자») — 풀밭·협곡·화산 3곡(game-assets-src/bgm, gen-bgm.sh)
+    battleTrack = { bg_meadow: "gameplay-meadow", bg_canyon: "gameplay-canyon", bg_volcano: "gameplay-volcano" }[bgKey] || "gameplay";
     // v8: 이 학년에 필요한 것부터 받고, 후반 전용 몬스터는 백그라운드로 이어 받는다.
     //     스프라이트가 아직 없으면 렌더러가 절차적 드로잉으로 폴백하므로 안전하다.
     if (!window.__spritesReady) window.__spritesReady = preloadSprites("assets", bgKey);
@@ -1387,7 +1391,7 @@ async function initializeGame(difficulty, savedState = null) {
   stopMenuParticles();
   musicSystem.init();
   sfx.play("game_start");
-  musicSystem.play("gameplay");
+  musicSystem.play(battleTrack);
   musicSystem.setIntensity(0.3);
 
   // [V2] 게임 통계 초기화
@@ -3469,8 +3473,8 @@ function startWave() {
     currentWave % 20 === 0
   ) {
     musicSystem.play("boss");
-  } else if (musicSystem.currentTrack !== "gameplay") {
-    musicSystem.play("gameplay");
+  } else if (musicSystem.currentTrack !== battleTrack) {
+    musicSystem.play(battleTrack);
   }
 
   // 웨이브 수·조성은 simCore가 단일 진실원 (밸런스 프로브와 공유)
@@ -5377,7 +5381,7 @@ function checkWaveCompletion() {
 
     // 보스 웨이브 클리어 후 음악 복귀
     if (musicSystem.currentTrack === "boss") {
-      musicSystem.play("gameplay");
+      musicSystem.play(battleTrack);
     }
 
     // v5: 무피해 클리어 보너스 — 성 체력 회복 (회복 루프)

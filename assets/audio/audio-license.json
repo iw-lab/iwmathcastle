@@ -87,6 +87,30 @@
       "author": "OpenGameArt 기여자",
       "fetched": "2026-07-25",
       "url": "https://opengameart.org/content/swordfight"
+    },
+    {
+      "file": "bgm/gameplay-meadow.mp3",
+      "source": "자체 생성(ACE-Step 1.5 로컬, game-builder gen-bgm.sh)",
+      "license": "자체 제작",
+      "author": "수학 성 수호자 제작팀",
+      "url": "",
+      "fetched": "2026-10-10"
+    },
+    {
+      "file": "bgm/gameplay-canyon.mp3",
+      "source": "자체 생성(ACE-Step 1.5 로컬, game-builder gen-bgm.sh)",
+      "license": "자체 제작",
+      "author": "수학 성 수호자 제작팀",
+      "url": "",
+      "fetched": "2026-10-10"
+    },
+    {
+      "file": "bgm/gameplay-volcano.mp3",
+      "source": "자체 생성(ACE-Step 1.5 로컬, game-builder gen-bgm.sh)",
+      "license": "자체 제작",
+      "author": "수학 성 수호자 제작팀",
+      "url": "",
+      "fetched": "2026-10-10"
     }
   ]
 }
