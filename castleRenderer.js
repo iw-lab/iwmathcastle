@@ -103,15 +103,16 @@ export class CastleRenderer {
   // ----------------------------------------------------------
   // Main render entry point
   // ----------------------------------------------------------
-  render(ctx, x, y, hp, maxHp, timestamp, topSafeY = 64, worldScale = 1) {
+  render(ctx, x, y, hp, maxHp, timestamp, topSafeY = 64, worldScale = 1, maxH = 0) {
     // v5.6: AI 캐슬 스프라이트 우선 (웅장한 마법 성). 미로드 시 절차 캐슬 폴백.
     const sprite = getSprite("castle_keep");
     if (sprite) {
       // v6.2: 170px 고정이면 폰 가로(플레이 높이 ≈220px)에서 성 하나가 세로를 다 먹는다.
       //       화면이 낮을수록 같이 줄인다(worldScale은 main.js가 계산해 넘긴다).
-      const targetW = 170 * worldScale;
-      const scl = targetW / sprite.width;
-      const targetH = sprite.height * scl;
+      let targetW = 170 * worldScale;
+      let targetH = sprite.height * (targetW / sprite.width);
+      // 상단 바와 길 끝 사이에 안 들어가면 줄인다(2026-10-10) — 클램프로 위만 자르면 바닥이 다시 아래로 밀려 길을 덮었다
+      if (maxH > 0 && targetH > maxH) { targetW *= maxH / targetH; targetH = maxH; }
       // 절차 캐슬의 하단중앙에 스프라이트 하단중앙 정렬 (크리스탈 첨탑은 위로 뻗음)
       // 첨탑이 상단 HUD에 잘리지 않게 아래로 여유
       const bx = x + this._width / 2;
@@ -128,6 +129,7 @@ export class CastleRenderer {
       }
       ctx.drawImage(sprite, dx, dy, Math.round(targetW), Math.round(targetH));
       ctx.restore();
+      this.lastRect = { x: dx, y: dy, w: Math.round(targetW), h: Math.round(targetH) };   // QA(qaCastleLayout): 실제로 그린 성 영역
       return;
     }
 

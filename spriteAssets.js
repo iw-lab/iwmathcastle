@@ -108,9 +108,11 @@ export function drawSpriteCentered(ctx, key, cx, cy, box) {
   const scale = box / Math.max(img.width, img.height);
   const w = img.width * scale;
   const h = img.height * scale;
-  const qw = Math.max(2, Math.round(w / 2) * 2), qh = Math.max(2, Math.round(h / 2) * 2);
+  // 미리 줄인 비트맵은 «기기 픽셀» 크기로 굽는다(변환 행렬의 배율 s) — CSS 픽셀 크기로 구우면 고해상도 캔버스에서 다시 늘어나 흐렸다(2026-10-10)
+  const s = Math.abs(ctx.getTransform?.().a || 1);
+  const qw = Math.max(2, Math.round((w * s) / 2) * 2), qh = Math.max(2, Math.round((h * s) / 2) * 2);
   const pre = qw < img.width && qh < img.height ? scaledSprite(key, img, qw, qh) : null;
-  if (pre) ctx.drawImage(pre, cx - qw / 2, cy - qh / 2);
+  if (pre) ctx.drawImage(pre, cx - w / 2, cy - h / 2, w, h);
   else ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
   return true;
 }

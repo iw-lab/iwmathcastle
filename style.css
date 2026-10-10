@@ -4321,3 +4321,21 @@ html.q-low #info-bar, html.q-low #control-bar, html.q-low .castle-health, html.q
 }
 html.q-low #info-bar, html.q-low #control-bar { background: rgba(14, 18, 40, 0.92) !important; }
 html.q-low #info-bar, html.q-low #info-bar::before, html.q-low #info-bar *, html.q-low #waveProgressBar { animation: none !important; }
+
+
+/* 폰 조작 — 왼쪽 조이스틱 · 오른쪽 건설/공격(2026-10-10). 하단 컨트롤 바 바로 위(--tp-bottom 은 main.js installTouchPad 가 잰다) */
+.touch-pad { display: none; }
+body.is-touch .touch-pad { display: block; position: absolute; inset: 0; pointer-events: none; z-index: 40; }
+.tp-stick { position: absolute; left: 14px; bottom: var(--tp-bottom, 72px); width: 112px; height: 112px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.10), rgba(255,255,255,0.04)); border: 2px solid rgba(255,215,0,0.45);
+  box-shadow: 0 0 18px rgba(0,0,0,0.35) inset; pointer-events: auto; touch-action: none; }
+.tp-knob { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff8d0, #f5c542 60%, #b8860b); box-shadow: 0 4px 10px rgba(0,0,0,0.45); pointer-events: none; }
+.tp-btns { position: absolute; right: 14px; bottom: var(--tp-bottom, 72px); display: flex; align-items: flex-end; gap: 12px; pointer-events: auto; }
+.tp-btn { display: grid; place-items: center; border-radius: 50%; border: 2px solid rgba(255,255,255,0.55); color: #fff; font-size: 26px; line-height: 1;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.45); touch-action: manipulation; font-family: var(--font-display); }
+.tp-btn small { font-size: 12px; font-weight: 800; margin-top: -6px; }
+.tp-btn.atk { width: 84px; height: 84px; background: radial-gradient(circle at 35% 30%, #ff8a7a, #e0402a 65%, #9c1f10); }
+.tp-btn.build { width: 64px; height: 64px; background: radial-gradient(circle at 35% 30%, #8fe3ff, #2f8fd6 65%, #17507e); }
+.tp-btn:active { transform: translateY(2px) scale(0.96); }
+@media (max-height: 380px) { .tp-stick { width: 96px; height: 96px; } .tp-btn.atk { width: 70px; height: 70px; } .tp-btn.build { width: 56px; height: 56px; font-size: 22px; } }

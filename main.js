@@ -177,6 +177,7 @@ let waveInProgress = false,
   gameInitialized = false,
   problemAnswered = false;
 const keysPressed = {};
+let DPR = 1;   // 렌더 해상도 배율 — sizeCanvas()·renderDpr() 참고(아래)
 let wizardLevel = 1,
   wizardPosition = { x: 100, y: 200 },
   wizardSpeed = 4,
@@ -929,8 +930,12 @@ window.addEventListener("DOMContentLoaded", () => {
       // 재시작 시 쿨다운이 이전 판에서 넘어오지 않는지 검증하려면 값이 보여야 한다
       // (안 보이면 게이트가 그 회귀를 못 잡는다 — 실제로 교차검증이 그 사각지대를 지적했다)
       spellCooldowns: { ...wizardCooldowns },
+      wizard: { x: Math.round(wizardPosition.x), y: Math.round(wizardPosition.y) }, buildStep,   // 폰 조작 QA(tools/qa-touchpad.mjs)
       autoCooldownUntil: WIZARD_AUTO_ATTACK_STATS.cooldownUntil || 0,
     }),
+    // 폰 배치 QA(tools/qa-phone-layout.mjs): 길 끝점·성 상자·실제로 그린 성 영역·축척
+    qaCastleLayout: () => ({ pathEnd: pathPoints[pathPoints.length - 1] || null, castle: { ...castleCoords }, castleRect: castleRenderer?.lastRect || null,
+      ws: worldScale(), tile: tileStep(), pf: playfieldBounds(), hp: document.querySelector('.castle-health')?.getBoundingClientRect()?.toJSON?.() || null }),
     // ── v9 QA 훅 ──────────────────────────────────────────
     // 연출은 수백 ms 만에 사라져 폴링으로는 못 본다 → 상태를 직접 노출한다.
     qaImpactState: () => ({
@@ -1359,8 +1364,7 @@ async function initializeGame(difficulty, savedState = null) {
   ((gameRunning = true), (gamePaused = false), (waveInProgress = false));
 
   // Canvas 초기화
-  dynamicLayerCanvas.width = window.innerWidth;
-  dynamicLayerCanvas.height = window.innerHeight;
+  sizeCanvas(dynamicLayerCanvas);
   dynamicCtx = dynamicLayerCanvas.getContext("2d");
 
   // [NEW] 공간 분할 그리드 초기화
@@ -1644,8 +1648,7 @@ function regenerateLayout() {
   }
 
   if (gameElements.dynamicLayerCanvas) {
-    gameElements.dynamicLayerCanvas.width = window.innerWidth;
-    gameElements.dynamicLayerCanvas.height = window.innerHeight;
+    sizeCanvas(gameElements.dynamicLayerCanvas);
   }
 
   relocateTowersToValidTiles();
@@ -1862,9 +1865,9 @@ function drawRoad(corners, w) {
     gameElements.gameCanvas.appendChild(pathCanvas);
     pathCtx = pathCanvas.getContext("2d");
   }
-  pathCanvas.width = window.innerWidth;
-  pathCanvas.height = window.innerHeight;
+  sizeCanvas(pathCanvas);
   const ctx = pathCtx;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);   // 그리기는 CSS 픽셀 좌표 그대로
   ctx.clearRect(0, 0, pathCanvas.width, pathCanvas.height);
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
@@ -2061,13 +2064,18 @@ function positionCastle() {
     // 낮은 화면에선 이 꼬리가 하단 컨트롤 바 밑으로 숨어 체력이 안 보였다
     // (740×300 실측: 27px 가림). 발자국 전체가 플레이 영역에 들어오도록 올려 붙인다.
     const CASTLE_FOOTPRINT = 176;
+    const CASTLE_BASE_OFFSET = 130;   // castleRenderer: 성 바닥 = castleCoords.y + 130(아래 render 호출 cy 와 렌더러 by 의 합)
     const pf = playfieldBounds();
     // v5.8: 캐슬 앵커를 아래로(-50 → -20) — 첨탑이 상단 info-bar에 잘리던 문제
+    // v11.1(2026-10-10 «성은 아래로 내려와 있고»): 성 바닥 = 길 끝점 바로 밑(길 한 줄의 0.8). 전에는 «길 끝 −20»에 고정 오프셋(+130)을
+    //   더해 바닥이 늘 110px 아래였다 — 폰은 길 한 줄이 46px 라 성이 가운데 길까지 덮었다(qa-phone-layout 실측). 들어갈 자리가 모자라면
+    //   성을 줄인다(castleRenderer.render 의 maxH). 체력 표시는 성 상자 기준이라 함께 올라온다
+    const castleBase = lastPoint.y + Math.round(0.8 * tileStep());
     castleCoords = {
       x: Math.max(10, lastPoint.x),
       y: Math.max(
         10,
-        Math.min(lastPoint.y - 20, pf.bottom - CASTLE_FOOTPRINT),
+        Math.min(castleBase - CASTLE_BASE_OFFSET, pf.bottom - CASTLE_FOOTPRINT),
       ),
     };
     castleEl.style.left = `${castleCoords.x}px`;
@@ -2308,6 +2316,48 @@ function updateSpatialGrid() {
   }
 }
 
+// ── 폰 조작: 왼쪽 조이스틱 · 오른쪽 건설/공격(2026-10-10 사용자 «마법사 왼쪽쯤에 조이스틱 오른쪽에 스킬») ──
+//   전에는 마법사를 손가락으로 직접 끌어야 했다 — 손가락이 마법사를 가리고, 탭이 공격과 이동을 같이 맡았다.
+//   조이스틱은 키보드 WASD 자리에 아날로그 방향으로 들어간다(updateWizard). 직접 끌기도 그대로 둔다
+let padFace = { x: 1, y: 0 };   // 조이스틱이 마지막으로 가리킨 방향(빈 들판 공격 방향)
+const FIELD_SPELLS = ["teleport", "blackHole", "fireball", "frostNova"];
+const touchStick = { active: false, x: 0, y: 0, id: null };
+function installTouchPad() {
+  const pad = document.getElementById("touchPad");
+  if (!pad || !isTouchLike) return;
+  const stick = document.getElementById("tpStick"), knob = document.getElementById("tpKnob");
+  const place = () => {
+    const bar = document.getElementById("control-bar")?.getBoundingClientRect();
+    pad.style.setProperty("--tp-bottom", `${Math.max(8, Math.round(bar && bar.height ? window.innerHeight - bar.top + 8 : 72))}px`);
+  };
+  place(); window.addEventListener("resize", place); setTimeout(place, 800);
+  const R = 44, DEAD = 8;
+  const move = (e) => {
+    const r = stick.getBoundingClientRect();
+    let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+    const l = Math.hypot(dx, dy);
+    if (l > R) { dx *= R / l; dy *= R / l; }
+    knob.style.transform = `translate(${Math.round(dx)}px, ${Math.round(dy)}px)`;
+    touchStick.x = l < DEAD ? 0 : dx / R; touchStick.y = l < DEAD ? 0 : dy / R; if (l >= DEAD) padFace = { x: dx / l, y: dy / l };
+  };
+  stick.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); touchStick.active = true; touchStick.id = e.pointerId; stick.setPointerCapture?.(e.pointerId); move(e); });
+  stick.addEventListener("pointermove", (e) => { if (touchStick.active && e.pointerId === touchStick.id) move(e); });
+  const end = (e) => { if (e.pointerId !== touchStick.id) return; touchStick.active = false; touchStick.x = touchStick.y = 0; touchStick.id = null; knob.style.transform = ""; };
+  stick.addEventListener("pointerup", end); stick.addEventListener("pointercancel", end);
+  document.getElementById("tpAtk").addEventListener("click", (e) => { e.stopPropagation(); padAttack(); });
+  document.getElementById("tpBuild").addEventListener("click", (e) => { e.stopPropagation(); handleBuildKey(); });
+}
+/** 공격 단추 — 칸을 골라 쓰는 마법(파이어볼 등)이면 마법사에게 가장 가까운 몬스터를 겨눈다 */
+function padAttack() {
+  if (!FIELD_SPELLS.includes(activeSpell)) { handleWizardAttack(); return; }
+  const wx = wizardPosition.x + wizardSprite.width / 2, wy = wizardPosition.y + wizardSprite.height / 2;
+  let best = null, bd = Infinity;
+  for (const m of monsters) { if (m.isDead) continue; const d = (m.x - wx) ** 2 + (m.y - wy) ** 2; if (d < bd) { bd = d; best = m; } }
+  // 몬스터가 없으면 마법사가 바라보던 쪽 앞에 쏜다 — 단추를 눌렀는데 아무 일도 없으면 아이는 고장으로 안다
+  const t = best || { x: wx + padFace.x * 140, y: wy + padFace.y * 140 };
+  handleWizardAttack({ x: t.x, y: t.y });
+}
+
 function updateWizard(deltaTime) {
   // 터치 드래그 중에도 타일 포커스·힌트는 갱신해야 한다(모바일의 이동 수단이므로)
   if (isDraggingWizard) {
@@ -2328,8 +2378,9 @@ function updateWizard(deltaTime) {
   if (keysPressed["d"] || keysPressed["D"] || keysPressed["KeyD"] || keysPressed["ArrowRight"])
     dx += 1;
 
+  if (touchStick.active && (touchStick.x || touchStick.y)) { dx = touchStick.x; dy = touchStick.y; }   // 폰 조이스틱(아날로그)
   // [V3] 마법사 스프라이트 방향, 갤럽, 애니메이션 업데이트
-  wizardSprite.setDirection(dx, dy);
+  wizardSprite.setDirection(Math.sign(Math.round(dx * 2)), Math.sign(Math.round(dy * 2)));
   const isMoving = dx !== 0 || dy !== 0;
   const isRunning =
     isMoving && (keysPressed["Shift"] || keysPressed["ShiftLeft"]);
@@ -2452,6 +2503,7 @@ function handleBuildKey() {
     return;
   }
   if (focusedTile) openTowerSelectorForTile(focusedTile);
+  else if (document.body.classList.contains("is-touch")) showMessage("빈 칸 가까이 가서 눌러요 (조이스틱으로 이동)");
 }
 
 function openTowerSelectorForTile(tile) {
@@ -2523,6 +2575,16 @@ function playfieldBounds() {
  * 0.55 아래로는 안 내린다 — 더 줄이면 성이 뭉개져 알아보기 어렵다.
  * ⚠️ 히트박스·밸런스에 영향을 주지 않도록 "그리는 크기"에만 쓴다.
  */
+// 렌더 해상도 배율(2026-10-10 «흐려지고 구린 것 같은데») — 캔버스를 CSS 픽셀(innerWidth)로만 만들어 폰(배율 2.6)에선 화면 전체가 2.6배로
+//   늘어나 흐렸다. 기기 배율로 만들고(최대 2 — 성능), 저사양 모드는 1 그대로. 그리기 좌표는 그대로 CSS 픽셀(변환 행렬이 배율을 맡는다)
+function renderDpr() { return quality.low ? 1 : Math.min(2, window.devicePixelRatio || 1); }
+function sizeCanvas(cv) { DPR = renderDpr(); cv.width = Math.round(window.innerWidth * DPR); cv.height = Math.round(window.innerHeight * DPR); }
+
+/** 성 첨탑이 넘지 않을 위쪽 한계 — 플레이 영역 위끝(상단 바 바로 밑). 고정 64 는 폰(상단 바 43px)에서 성을 쓸데없이 작게 만들었다 */
+function castleTopSafe() {
+  return Math.max(40, Math.round(playfieldBounds().top) + 2);
+}
+
 function worldScale() {
   return Math.max(0.55, Math.min(1, playfieldBounds().height / 560));
 }
@@ -3207,7 +3269,7 @@ function renderDynamicLayer() {
   // v6 버그수정: 렌더 중 예외가 나면 ctx.save()가 restore() 없이 쌓여 변환행렬이 누적된다.
   // 그러면 clearRect가 엉뚱한 영역을 지워 성이 다른 자리에 그려지고 몬스터가 화면에서
   // 사라진다(실측 재현). 프레임 시작마다 변환을 원점으로 되돌려 사고를 1프레임으로 가둔다.
-  dynamicCtx.setTransform(1, 0, 0, 1, 0, 0);
+  dynamicCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
   dynamicCtx.clearRect(0, 0, canvas.width, canvas.height);
 
   // [V2] 캐슬 캔버스 렌더링
@@ -3221,8 +3283,9 @@ function renderDynamicLayer() {
       castleHealth,
       100,
       now,
-      64,
+      castleTopSafe(),
       worldScale(),
+      castleCoords.y + 130 - castleTopSafe(),   // maxH — 상단 바와 성 바닥 사이에 들어가는 키
     );
   }
 
@@ -3235,7 +3298,7 @@ function renderDynamicLayer() {
       drawRarityRing(dynamicCtx, t, towerScale);
       towerRenderer.render(dynamicCtx, t.type, t.x, t.y, t.level, now, towerScale);
     } catch (e) {
-      dynamicCtx.setTransform(1, 0, 0, 1, 0, 0);
+      dynamicCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
       logRenderFailure(`tower:${t.type}`, e);
     }
   }
@@ -3287,7 +3350,7 @@ function renderDynamicLayer() {
       },
     );
     } catch (e) {
-      dynamicCtx.setTransform(1, 0, 0, 1, 0, 0);
+      dynamicCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
       logRenderFailure(`monster:${m.monsterKey}`, e);
     }
     if (m.isStealthed) dynamicCtx.globalAlpha = 1;
@@ -5897,6 +5960,7 @@ function setupEventListeners() {
     }
   });
 
+  installTouchPad();
   const rankingTabsContainer = document.querySelector(".ranking-tabs");
   if (rankingTabsContainer) {
     rankingTabsContainer.addEventListener("click", (event) => {
