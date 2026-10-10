@@ -1,0 +1,454 @@
+{
+ "normal": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.777,
+  "lum": 0.88,
+  "box": [
+   31,
+   17,
+   152,
+   181
+  ]
+ },
+ "tank": {
+  "ok": true,
+  "shape": "quad",
+  "row": 5,
+  "match": 0.796,
+  "lum": 0.8,
+  "box": [
+   16,
+   30,
+   160,
+   162
+  ]
+ },
+ "bat": {
+  "ok": true,
+  "shape": "fly",
+  "row": 7,
+  "match": 0.689,
+  "lum": 0.86,
+  "box": [
+   32,
+   31,
+   131,
+   155
+  ]
+ },
+ "leech": {
+  "ok": true,
+  "shape": "worm",
+  "row": 5,
+  "match": 0.876,
+  "lum": 0.81,
+  "box": [
+   26,
+   59,
+   170,
+   142
+  ]
+ },
+ "3": {
+  "ok": false,
+  "why": "glb 없음"
+ },
+ "wizard": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.834,
+  "lum": 1.04,
+  "box": [
+   47,
+   12,
+   145,
+   181
+  ]
+ },
+ "ancientDragon": {
+  "ok": true,
+  "shape": "fly",
+  "row": 6,
+  "match": 0.674,
+  "lum": 0.97,
+  "box": [
+   43,
+   30,
+   149,
+   151
+  ]
+ },
+ "archfiend": {
+  "ok": true,
+  "shape": "biped",
+  "row": 7,
+  "match": 0.686,
+  "lum": 0.82,
+  "box": [
+   9,
+   20,
+   173,
+   167
+  ]
+ },
+ "assassin": {
+  "ok": true,
+  "shape": "biped",
+  "row": 7,
+  "match": 0.785,
+  "lum": 0.83,
+  "box": [
+   29,
+   13,
+   169,
+   179
+  ]
+ },
+ "berserker": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.717,
+  "lum": 0.9,
+  "box": [
+   13,
+   19,
+   178,
+   169
+  ]
+ },
+ "boss": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.825,
+  "lum": 0.92,
+  "box": [
+   10,
+   19,
+   178,
+   177
+  ]
+ },
+ "chronomancer": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.767,
+  "lum": 0.9,
+  "box": [
+   25,
+   12,
+   167,
+   178
+  ]
+ },
+ "collector": {
+  "ok": false,
+  "why": "creature",
+  "shape": "biped",
+  "log": "❌ [gate] walk 발이 엇갈리지 않는다(f6 0.046 · f18 -0.044)\n❌ [gate] FAIL 1건 — 리포트 /Users/sim-insu/Documents/dev/iwmathsung/iwmathcastle/game-assets-src/rig/work/collector/creature.json"
+ },
+ "demonKing": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.71,
+  "lum": 0.98,
+  "box": [
+   16,
+   23,
+   170,
+   164
+  ]
+ },
+ "disruptor": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.788,
+  "lum": 0.88,
+  "box": [
+   29,
+   10,
+   158,
+   179
+  ]
+ },
+ "dragon": {
+  "ok": true,
+  "shape": "fly",
+  "row": 6,
+  "match": 0.651,
+  "lum": 0.92,
+  "box": [
+   22,
+   34,
+   170,
+   160
+  ]
+ },
+ "finalBoss": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.769,
+  "lum": 0.92,
+  "box": [
+   18,
+   29,
+   168,
+   179
+  ]
+ },
+ "general": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.76,
+  "lum": 0.87,
+  "box": [
+   20,
+   24,
+   170,
+   181
+  ]
+ },
+ "ghost": {
+  "ok": true,
+  "shape": "fly",
+  "row": 6,
+  "match": 0.722,
+  "lum": 1.02,
+  "box": [
+   12,
+   19,
+   180,
+   165
+  ]
+ },
+ "golem": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.766,
+  "lum": 0.9,
+  "box": [
+   15,
+   21,
+   176,
+   169
+  ]
+ },
+ "healer": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.817,
+  "lum": 0.99,
+  "box": [
+   17,
+   20,
+   176,
+   181
+  ]
+ },
+ "mimic": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.792,
+  "lum": 0.86,
+  "box": [
+   28,
+   12,
+   171,
+   173
+  ]
+ },
+ "mirage": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.786,
+  "lum": 0.98,
+  "box": [
+   31,
+   12,
+   151,
+   176
+  ]
+ },
+ "necromancer": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.766,
+  "lum": 0.86,
+  "box": [
+   26,
+   14,
+   162,
+   178
+  ]
+ },
+ "phoenix": {
+  "ok": true,
+  "shape": "fly",
+  "row": 6,
+  "match": 0.711,
+  "lum": 0.93,
+  "box": [
+   35,
+   29,
+   157,
+   159
+  ]
+ },
+ "plaguebearer": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.811,
+  "lum": 0.87,
+  "box": [
+   18,
+   28,
+   172,
+   169
+  ]
+ },
+ "shadowDragon": {
+  "ok": true,
+  "shape": "fly",
+  "row": 6,
+  "match": 0.653,
+  "lum": 0.94,
+  "box": [
+   46,
+   35,
+   146,
+   141
+  ]
+ },
+ "shielder": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.846,
+  "lum": 0.91,
+  "box": [
+   31,
+   15,
+   154,
+   180
+  ]
+ },
+ "speed": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.781,
+  "lum": 0.86,
+  "box": [
+   9,
+   19,
+   181,
+   159
+  ]
+ },
+ "splitter": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.837,
+  "lum": 0.88,
+  "box": [
+   35,
+   9,
+   158,
+   179
+  ]
+ },
+ "summoner": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.8,
+  "lum": 0.93,
+  "box": [
+   31,
+   15,
+   160,
+   179
+  ]
+ },
+ "swarmling": {
+  "ok": true,
+  "shape": "quad",
+  "row": 6,
+  "match": 0.757,
+  "lum": 0.81,
+  "box": [
+   10,
+   37,
+   169,
+   153
+  ]
+ },
+ "teleporter": {
+  "ok": true,
+  "shape": "fly",
+  "row": 6,
+  "match": 0.82,
+  "lum": 0.91,
+  "box": [
+   34,
+   11,
+   158,
+   171
+  ]
+ },
+ "titanGolem": {
+  "ok": true,
+  "shape": "biped",
+  "row": 6,
+  "match": 0.751,
+  "lum": 0.99,
+  "box": [
+   32,
+   14,
+   162,
+   182
+  ]
+ },
+ "voidLord": {
+  "ok": true,
+  "shape": "biped",
+  "row": 7,
+  "match": 0.819,
+  "lum": 0.94,
+  "box": [
+   20,
+   23,
+   176,
+   174
+  ]
+ },
+ "wormQueen": {
+  "ok": true,
+  "shape": "worm",
+  "row": 7,
+  "match": 0.69,
+  "lum": 0.94,
+  "box": [
+   23,
+   15,
+   171,
+   176
+  ]
+ }
+}

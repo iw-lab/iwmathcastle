@@ -10,6 +10,7 @@ CFH=/Users/sim-insu/Documents/dev/iwdraw/.cf-home          # naver 계정 OAuth 
 git diff --quiet && git diff --cached --quiet || { echo "✖ 커밋 안 된 변경이 있다"; exit 2; }
 [ "$(git rev-parse HEAD)" = "$(git rev-parse @{u})" ] || { echo "✖ push 먼저"; exit 2; }
 HOME=$CFH $WR whoami 2>&1 | grep -q 4644562c4caa65bcd406fbbe6f104e59 || { echo "✖ naver 계정(4644562c…)이 아니다 — 배포 중단"; exit 3; }
+python3 tools/check-walk-frames.py >/dev/null || { python3 tools/check-walk-frames.py; echo "✖ 뼈대 걷기 8장 검사 실패 — 배포 중단"; exit 4; }
 B=$(git rev-parse --short HEAD); S=$(mktemp -d "${TMPDIR:-/tmp}/mc-deploy.XXXXXX")
 cp ./*.html ./*.js ./*.css _headers site.webmanifest wrangler.toml "$S"/
 cp -R assets problems functions "$S"/

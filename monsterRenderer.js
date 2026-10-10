@@ -314,8 +314,10 @@ export class MonsterRenderer {
     // 지상 ≈ 8fps(초당 2걸음). 작은 비행체는 날갯짓이 걸음보다 빨라야 살아 있어 보여서
     // 1.6배(≈13fps)로 돌리고, 날개가 큰 비행 보스(드래곤류)는 느린 그대로 둔다.
     const frameHz = options.isFlying && !isBoss ? 1.6 : 0.9;
+    // v11.2(2026-10-10 «뼈대 입혀서 제대로 움직이게»): 뼈대 리그로 렌더한 8프레임 시트(tools/rig-monsters.py)면 8장 — 한 걸음 주기는 4장일 때와 같게
+    const walkN = hasWalkSheet && getSprite(`${spriteKey}_walk_7`) ? 8 : 4;
     const walkKey = hasWalkSheet
-      ? `${spriteKey}_walk_${((Math.floor(wp * frameHz) % 4) + 4) % 4}`
+      ? `${spriteKey}_walk_${((Math.floor(wp * frameHz * walkN / 4) % walkN) + walkN) % walkN}`
       : spriteKey;
     // v9: 히트 플래시가 "무엇을 하얗게 칠할지" 알아야 하므로, 어느 키가 실제로
     //     그려졌는지 먼저 확정한다(구버전은 || 단락평가로 결과를 버렸다).

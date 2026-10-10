@@ -676,7 +676,11 @@ export class WizardSprite {
     const hasWalkSheet = !!getSprite("wizard_walk_0");
     let poseSprite;
     if (walking && hasWalkSheet) {
-      poseSprite = getSprite(`wizard_walk_${this._frame % 4}`); // _frame 0~7 → 4프레임 순환
+      // 뼈대 리그 8장(tools/rig-monsters.py)이면 반 칸씩 더 쪼개 8장 — 걸음 주기는 4장 때와 같다(_frame 0~7 → 4장 순환이었다)
+      const fm = this._galloping ? this._gallopFrameMs : this._walkFrameMs;
+      poseSprite = getSprite("wizard_walk_7")
+        ? getSprite(`wizard_walk_${(this._frame * 2 + (this._frameTimer >= fm / 2 ? 1 : 0)) % 8}`)
+        : getSprite(`wizard_walk_${this._frame % 4}`);
     } else {
       poseSprite = getSprite(this._casting ? "wizard_cast" : "wizard_idle");
     }
