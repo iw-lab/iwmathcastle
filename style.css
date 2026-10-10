@@ -4204,7 +4204,22 @@ body.is-touch kbd {
 .menu-hero .hero-tag { margin: 6px 0 0; font-size: clamp(14px, 1.6vw, 18px); color: #e8f1ff; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8); }
 .menu-hero .version-badge { position: absolute; right: 14px; top: 12px; z-index: 1; }
 .menu-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; padding: 16px clamp(12px, 2vw, 24px) 4px; }
-@media (max-width: 899px) { .menu-grid { grid-template-columns: 1fr; } }
+/* 좁은 화면(폰 세로·태블릿 세로)에서는 한 줄로 쌓이며 오른쪽 칸(학교 대항전·랭킹)이
+   왼쪽 전체(모드·학년·메뉴 버튼) 아래로 밀려 스크롤해야 보였다(사용자 2026-10-10:
+   "학교랭킹은 첫화면에 잘 보여줘... 오히려 잘보이게 표시해 랭킹 위에나").
+   menu-main·menu-side를 display:contents로 풀어 손자 요소들을 menu-grid의 직접 자식으로
+   만들고 order로 재배치: 학년 버튼(메인 플레이 단추)은 그대로 맨 위에 두어 가리지 않고,
+   바로 다음에 학교 순위를 올린다. 공간이 모자라면 오늘의 도전·개인 랭킹이 아래로 밀린다. */
+@media (max-width: 899px) {
+    .menu-grid { grid-template-columns: 1fr; }
+    .menu-main, .menu-side { display: contents; }
+    .mode-section { order: 1; }
+    .difficulty-section { order: 2; }
+    .school-panel { order: 3; }
+    .menu-actions { order: 4; }
+    .daily-panel { order: 5; }
+    .rank-panel { order: 6; }
+}
 .menu-main, .menu-side { min-width: 0; }
 .menu-v11 .daily-panel, .menu-v11 .rank-panel, .menu-v11 .school-panel { max-width: none; margin: 0 0 12px; }
 .step-label { display: flex; align-items: center; gap: 10px; margin: 4px 0 10px; font-size: 17px; color: #e8f1ff; text-align: left; }
@@ -4239,6 +4254,14 @@ body.is-touch kbd {
 .school-row { display: grid; grid-template-columns: 28px 1fr auto; gap: 6px; font-size: 14px; color: #dbe4f0; }
 .school-row.mine { color: #ffe27a; font-weight: 800; }
 .school-row.empty { display: block; color: #9fb3cc; font-size: 13px; }
+/* 1~3위 강조 — 메달(🥇🥈🥉)만 있고 줄 자체는 다른 줄과 똑같아 눈에 안 띄었다.
+   금·은·동 색 배경 띠 + 메달 확대 + 이름 굵게로 한눈에 들어오게 한다(사용자: "1~3위 강조"). */
+.school-list .school-row:not(.empty):nth-child(1) { background: linear-gradient(90deg, rgba(255, 209, 102, 0.22), transparent); border-radius: 8px; padding: 3px 6px; margin: 0 -6px; }
+.school-list .school-row:not(.empty):nth-child(2) { background: linear-gradient(90deg, rgba(200, 210, 230, 0.16), transparent); border-radius: 8px; padding: 3px 6px; margin: 0 -6px; }
+.school-list .school-row:not(.empty):nth-child(3) { background: linear-gradient(90deg, rgba(222, 150, 90, 0.16), transparent); border-radius: 8px; padding: 3px 6px; margin: 0 -6px; }
+.school-list .school-row:not(.empty):nth-child(-n+3) .school-medal { font-size: 18px; }
+.school-list .school-row:not(.empty):nth-child(-n+3) .school-name { font-weight: 800; color: #fff; }
+.school-list .school-row:not(.empty):nth-child(-n+3) .school-pts { color: #ffd166; font-weight: 800; }
 .school-modal { max-width: 460px; }
 .school-search { display: grid; grid-template-columns: 90px 1fr auto; gap: 8px; margin: 10px 0; }
 .school-search select, .school-search input { padding: 10px; border-radius: 10px; border: 1px solid rgba(120, 190, 255, 0.3); background: rgba(10, 16, 34, 0.9); color: #fff; font-size: 15px; }
@@ -4252,6 +4275,22 @@ body.is-touch kbd {
 .menu-hero .hero-text { left: auto; right: clamp(16px, 3vw, 36px); text-align: right; }
 .menu-hero .version-badge { right: auto; left: 14px; }
 .menu-v11 .difficulty-btn { width: 100%; }
+/* 폭 ≤899px(폰 세로·태블릿 세로): 순서만 바꿔선 부족했다(실측 412×915에서 배너+모드+
+   학년 버튼이 그대로면 학교 순위 카드가 922px 지점부터 시작 — 화면 밖). 메인 플레이
+   단추(학년 버튼) 자체 글자는 줄이지 않고, 배너 높이·1단계 카드만 압축해 자리를 번다.
+   (이 블록은 위 .mode-btn·.menu-v11 .difficulty-btn 기본값보다 뒤에 있어야 이긴다.) */
+@media (max-width: 899px) {
+    .menu-hero { height: clamp(84px, 13vh, 140px); }
+    .mode-section { margin-bottom: 8px; }
+    .step-label { margin: 2px 0 6px; font-size: 14px; }
+    .mode-btn { min-height: 0; flex-direction: row; align-items: center; gap: 8px; padding: 8px 10px; }
+    .mode-icon { font-size: 20px; }
+    .mode-desc, .mode-best { display: none; }
+    .menu-v11 .difficulty-btn { min-height: 60px; }
+    .menu-v11 .difficulty-options { gap: 6px; }
+    .diff-grade { font-size: 18px; }
+    .diff-label { font-size: 11px; }
+}
 /* v11 작은 가로 화면(폰): 학년 버튼이 첫 화면 안에 들어오게 — 얇은 배너 · 2단 · 한 줄 모드 카드 */
 @media (orientation: landscape) and (max-height: 500px) {
     #difficultyModal { padding: 0; }
