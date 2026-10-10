@@ -21,6 +21,7 @@ export function applyLowQuality(reason) {
   quality.low = true;
   quality.particleCap = 120;
   quality.domEffects = false;
+  try { document.documentElement.classList.add("q-low"); } catch { /* 문서 없는 환경(시뮬) */ }
   console.info(`[perfQuality] 저사양 모드 활성 (${reason}) — 파티클 상한 120, DOM 이펙트 차단`);
 }
 

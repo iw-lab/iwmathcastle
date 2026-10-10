@@ -204,7 +204,7 @@ export async function refreshRankingPanel({ maxAgeMs = 0 } = {}) {
   try {
     ui.renderRankingPanel(await fetchRankings({ maxAgeMs }));
   } catch (e) {
-    console.error("랭킹 패널 조회 오류:", e);
+    console.warn("랭킹 패널 조회 실패(오프라인·서버 없음은 정상 경로):", e?.message);
     // 한 번 실패했다고 멀쩡히 보이던 순위를 지우지 않는다(grok 교차검증 지적).
     // 패널은 늘 떠 있어서, 잠깐의 끊김에 비우면 최대 한 주기(90초) 동안 빈 채로 남는다.
     if (rankCache.data) ui.renderRankingPanel(rankCache.data);

@@ -924,7 +924,7 @@ window.addEventListener("DOMContentLoaded", () => {
       gold, castleHealth, currentWave, wizardLevel, activeSpell, gameMode,
       monsters: monsters.length, towers: towers.length,
       projectiles: projectiles.length,
-      gameRunning, gamePaused,
+      gameRunning, gamePaused, waveInProgress,
       gameSpeed, gameClock, // 배속 회귀 검증용 — gameClock은 배속만큼 빨리 흘러야 한다
       // 재시작 시 쿨다운이 이전 판에서 넘어오지 않는지 검증하려면 값이 보여야 한다
       // (안 보이면 게이트가 그 회귀를 못 잡는다 — 실제로 교차검증이 그 사각지대를 지적했다)

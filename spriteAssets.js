@@ -79,12 +79,43 @@ export function hasSprites() {
 }
 
 // 스프라이트를 (cx, cy) 중심 · box 크기에 비율 유지로 그린다. 성공 시 true.
+// v11(2026-10-10 «최적화»): 256px 원본을 매 프레임 40px 안팎으로 줄여 그리던 것을 «크기별로 미리 줄인 비트맵»으로 바꿨다.
+//   매 프레임 리샘플링이 사라진다(1:1 복사 — 실플레이 60초 긴 작업 81건 → 7~9건 실측).
+//   굽기는 createImageBitmap(resizeQuality high) — 메인 스레드 밖 비동기라 굽는 동안 프레임이 안 막힌다
+//   (동기 캔버스 굽기는 웨일북 에뮬에서 프레임당 JS 7.3ms 로 파국 게이트를 넘었다). 다 구워질 때까지는 예전처럼 바로 그린다.
+//   크기는 2px 단위로 묶고, 동시에 굽는 건 SCALED_INFLIGHT 장까지, 캐시는 SCALED_MAX 장을 넘으면 통째로 비운다.
+const scaled = new Map();   // k → ImageBitmap | "pending" | "fail"
+const SCALED_MAX = 600, SCALED_INFLIGHT = 8;
+let inflight = 0;
+const canResize = typeof createImageBitmap === "function";
+function scaledSprite(key, img, w, h) {
+  const k = `${key}@${w}x${h}`;
+  const hit = scaled.get(k);
+  if (hit && typeof hit !== "string") return hit;
+  if (hit || !canResize || inflight >= SCALED_INFLIGHT) return null;
+  if (scaled.size >= SCALED_MAX) scaled.clear();
+  scaled.set(k, "pending"); inflight++;
+  createImageBitmap(img, { resizeWidth: w, resizeHeight: h, resizeQuality: "high" })
+    .then((bm) => { if (scaled.get(k) === "pending") scaled.set(k, bm); else bm.close?.(); })
+    .catch(() => { scaled.set(k, "fail"); })   // 옵션 미지원 브라우저 — 이 크기는 늘 바로 그린다
+    .finally(() => { inflight--; });
+  return null;
+}
+
 export function drawSpriteCentered(ctx, key, cx, cy, box) {
   const img = sprites.get(key);
   if (!img) return false;
   const scale = box / Math.max(img.width, img.height);
   const w = img.width * scale;
   const h = img.height * scale;
-  ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
+  const qw = Math.max(2, Math.round(w / 2) * 2), qh = Math.max(2, Math.round(h / 2) * 2);
+  const pre = qw < img.width && qh < img.height ? scaledSprite(key, img, qw, qh) : null;
+  if (pre) ctx.drawImage(pre, cx - qw / 2, cy - qh / 2);
+  else ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
   return true;
+}
+
+/** QA·디버그: 미리 줄인 비트맵 캐시 크기 */
+export function scaledSpriteCount() {
+  return scaled.size;
 }

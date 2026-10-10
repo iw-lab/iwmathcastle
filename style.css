@@ -446,7 +446,8 @@ body {
         300px 450px;
     pointer-events: none;
     z-index: 1;
-    animation: fireflies 12s linear infinite;
+    /* v11(2026-10-10 최적화): fireflies(background-position) 애니메이션 제거 — 화면 전체 크기 의사요소를
+       매 프레임 통째로 다시 칠했다(웨일북 RasterTask 프레임당 150ms+의 주범). 점은 알파 0.3·1px 라 멈춰도 거의 같다. */
 }
 
 @keyframes subtleShimmer {
@@ -4272,3 +4273,12 @@ body.is-touch kbd {
     .menu-v11 .difficulty-btn .diff-label { display: none; }
     .menu-v11 .menu-actions { margin-top: 8px; }
 }
+
+/* v11(2026-10-10 최적화) 저사양 모드(html.q-low, perfQuality.applyLowQuality) —
+   매 프레임 바뀌는 캔버스 위의 backdrop 블러는 프레임마다 다시 계산된다. 반투명 단색으로 바꾸고 반짝임 애니메이션도 멈춘다. */
+html.q-low #gameCanvas::before { animation: none; }
+html.q-low #info-bar, html.q-low #control-bar, html.q-low .castle-health, html.q-low .action-hint, html.q-low .ctrl-btn {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+html.q-low #info-bar, html.q-low #control-bar { background: rgba(14, 18, 40, 0.92) !important; }
+html.q-low #info-bar, html.q-low #info-bar::before, html.q-low #info-bar *, html.q-low #waveProgressBar { animation: none !important; }
