@@ -58,13 +58,20 @@ const euro = (w) => (hasBatchim(w) && !w.endsWith("ㄹ") ? "으로" : "로");
 // 숫자(또는 숫자로 끝나는 표기: "8/18", "3:5") 뒤 조사 — 마지막 숫자의 한국어 읽기 받침
 const DIGIT_BATCHIM = { 0: true, 1: true, 2: false, 3: true, 4: false, 5: false, 6: true, 7: true, 8: true, 9: false };
 function lastDigitBatchim(x) {
+  // 🔴 분수 «a/b» 는 «b분의 a» 로 읽는다 — 마지막에 읽히는 건 분자다(2026-10-10 8way: 「1/4와」 → 「1/4과」)
+  const fr = String(x).match(/(\d+)\/\d+\D*$/); if (fr) return DIGIT_BATCHIM[fr[1].slice(-1)];
   const s = String(x); const m = s.match(/(\d)\D*$/);
   return m ? DIGIT_BATCHIM[m[1]] : hasBatchim(s);
 }
 const numWa = (x) => (lastDigitBatchim(x) ? "과" : "와");
 const numEul = (x) => (lastDigitBatchim(x) ? "을" : "를");
+// 으로/로 — 받침이 ㄹ(1 일·7 칠·8 팔)이면 «로»(2026-10-10 8way: 「6, 8, 9으로」)
+const numEuro = (x) => { const fr = String(x).match(/(\d+)\/\d+\D*$/); const d = fr ? fr[1].slice(-1) : (String(x).match(/(\d)\D*$/) || [])[1]; return d === undefined ? euro(String(x)) : ("036".includes(d) ? "으로" : "로"); };
 
-const ITEMS = ["사과", "연필", "구슬", "딸기", "지우개", "공책", "색종이", "붕어빵", "블록", "동전", "스티커", "장난감", "쿠키", "도토리", "밤"];
+// 8way(2026-10-10): 색종이는 «장»으로 센다(문장틀이 «개» 고정) → 사탕으로 바꿈
+const ITEMS = ["사과", "연필", "구슬", "딸기", "지우개", "공책", "사탕", "붕어빵", "블록", "동전", "스티커", "장난감", "쿠키", "도토리", "밤"];
+const SHOP_ITEMS = ITEMS.filter((it) => it !== "동전" && it !== "도토리" && it !== "밤");   // 가게에서 «사는» 물건
+const MADE_ITEMS = ["연필", "지우개", "공책", "블록", "장난감", "쿠키", "붕어빵", "스티커"];   // 공장에서 «만드는» 물건
 const NAMES = ["민준", "서연", "지호", "하은", "도윤", "수아", "예준", "지우"];
 
 // ---------- 생성 프레임워크 ----------
@@ -90,6 +97,12 @@ function buildSemester(templates, target) {
       // 답 0·음수 금지 (분수·비율·커스텀 오답형 제외) — v6: ":" 답(비율)이 NaN으로 전량 탈락하던 버그 수정
       if (!p.a.includes("/") && !p.a.includes(":") && !p.d && (!isFinite(aNum) || aNum <= 0)) continue;
 
+      if (p.d && new Set(p.d.filter((v) => v !== p.a)).size < 3) {   // 8way(2026-10-10): 3지선다로 나가던 틀 — 보충하거나 버린다
+        const { d } = buildDistractors(p.q, p.a, nextTarget(), p.ctx);
+        const merged = [...new Set([...p.d, ...d])].filter((v) => v !== p.a).slice(0, 3);
+        if (merged.length < 3) continue;
+        p.d = merged;
+      }
       if (!p.d) {
         // p.ctx = 문장제의 연산 맥락 (문제 문자열엔 연산자가 없어 파싱이 안 된다)
         const { d, rank } = buildDistractors(p.q, p.a, nextTarget(), p.ctx);
@@ -147,14 +160,16 @@ const T = {
     const big = rnd() < 0.5;
     const sorted = [...arr].sort((x, y) => (big ? y - x : x - y));
     if (!big && sorted[0] === 0) { [sorted[0], sorted[1]] = [sorted[1], sorted[0]]; }
-    return { q: `${arr.join(", ")}으로 만든 가장 ${big ? "큰" : "작은"} 세 자리 수는?`, a: sorted.join("") };
+    return { q: `${arr.join(", ")}${numEuro(arr[arr.length - 1])} 만든 가장 ${big ? "큰" : "작은"} 세 자리 수는?`, a: sorted.join("") };
   },
   timeConv: () => {
     if (rnd() < 0.35) { const mm = ri(1, 9), s = pick([0, 5, 10, 15, 20, 30, 40, 45, 50]); return { q: `${mm}분 ${s ? s + "초" : ""} = 몇 초?`.replace("  ", " "), a: String(mm * 60 + s) }; }
     const h = ri(1, 9), m = ri(0, 11) * 5; return { q: `${h}시간 ${m ? m + "분" : ""} = 몇 분?`.replace("  ", " "), a: String(h * 60 + m) };
   },
   lenConv: () => { const m = ri(1, 9), c = ri(0, 19) * 5; return { q: `${m}m ${c ? c + "cm" : ""} = 몇 cm?`.replace("  ", " "), a: String(m * 100 + c) }; },
-  unitFracCmp: () => { const a = ri(2, 9); let b = ri(2, 9); if (a === b) return null; return { q: `1/${a}${numWa(a)} 1/${b} 중 더 큰 분수는?`, a: `1/${Math.min(a, b)}` }; },
+  // 8way(2026-10-10): 「1/4와 1/2 중 더 큰 분수는? 오답 1/3, 1/4, 3/2」 — 비교 대상보다 큰 3/2 가 선택지에 있으면 «둘 중 하나»라는 문제 뜻이 흐려진다.
+  //   오답 = 비교한 다른 분수 + 그보다 작은 단위분수 둘(정답이 늘 선택지 중 가장 크다 — 묻는 것이 «둘 중 큰 것»이라 그게 정직하다)
+  unitFracCmp: () => { const a = ri(2, 9); let b = ri(2, 9); if (a === b) return null; const lo = Math.min(a, b), hi = Math.max(a, b); return { q: `1/${a}${numWa(`1/${a}`)} 1/${b} 중 더 큰 분수는?`, a: `1/${lo}`, d: [`1/${hi}`, `1/${hi + 1}`, `1/${hi + 3}`] }; },
   // 3-1 소수 첫걸음: 소수 한 자리 크기 비교
   decCmp1: () => {
     // v7: 구버전은 오답이 정답을 좌우로 감싸 정답이 100% 가운데였다(감사 실측).
@@ -170,9 +185,9 @@ const T = {
     const dn = [decStr(ansI - 3, 1), decStr(ansI - 12, 1)].filter((v) => Number(v) > 0);
     if (dn.length < 2) return null;
     const spread = rnd() < 0.5;
-    const extra = askBig
-      ? (spread ? [dn[0], dn[1]] : [dn[0], up[0]])   // other가 아래 → 정답 순위 3 또는 2
-      : (spread ? [up[0], up[1]] : [up[0], dn[0]]);  // other가 위   → 정답 순위 0 또는 1
+    // 8way(2026-10-10): 「3.6과 2.7 중 더 큰 수는? 오답 … 3.9」 — 비교 대상 밖의 더 큰 수가 끼면 «둘 중»이 흐려진다 → 큰 것을 물으면 오답은 아래로만
+    void spread;
+    const extra = askBig ? [dn[0], dn[1]] : [up[0], up[1]];
     const d = [...new Set([other, ...extra])].filter((v) => v !== ans);
     if (d.length < 3) return null;
     return { q: `${A}${numWa(A)} ${B} 중 더 ${askBig ? "큰" : "작은"} 수는?`, a: ans, d: d.slice(0, 3) };
@@ -193,7 +208,7 @@ const T = {
   mixedToImproper: () => {
     const w = ri(1, 4), d = ri(2, 9), n = ri(1, d - 1);
     if (gcd(n, d) !== 1) return null;
-    return { q: `대분수 ${w} ${n}/${d}${numEul(d)} 가분수로 나타내면?`, a: `${w * d + n}/${d}` };
+    return { q: `대분수 ${w} ${n}/${d}${numEul(`${n}/${d}`)} 가분수로 나타내면?`, a: `${w * d + n}/${d}` };
   },
   bigPlace: () => {
     const a = ri(2, 9), b = ri(1, 9);
@@ -233,7 +248,8 @@ const T = {
     const names = { 3: "삼각형", 4: "사각형", 5: "오각형", 6: "육각형", 7: "칠각형", 8: "팔각형", 9: "구각형", 10: "십각형", 11: "십일각형", 12: "십이각형" };
     const kind = ri(1, 3);
     if (kind === 1) {
-      const wrongs = [n - 1, n + 1, n + 2].filter((k) => names[k]).map((k) => names[k]);
+      // 8way(2026-10-10): n=12 면 오답이 «십일각형» 하나뿐이었다 → 후보를 넓혀 정확히 3개
+      const wrongs = [n - 1, n + 1, n + 2, n - 2, n - 3].filter((k) => names[k]).slice(0, 3).map((k) => names[k]);
       return { q: `변이 ${n}개인 다각형의 이름은?`, a: names[n], d: wrongs };
     }
     if (kind === 2) return { q: `${names[n]}의 한 꼭짓점에서 그을 수 있는 대각선은 몇 개?`, a: String(n - 3) };
@@ -252,7 +268,7 @@ const T = {
   },
   gcdQ: () => { const g = ri(2, 12), m = ri(2, 8); let n = ri(2, 8); if (gcd(m, n) !== 1) return null; const a = g * m, b = g * n; if (a > 60 || b > 60 || a === b) return null; return { q: `${a}${numWa(a)} ${b}의 최대공약수는?`, a: String(g) }; },
   lcmQ: () => { const a = ri(4, 20), b = ri(4, 20); if (a === b) return null; const l = lcm(a, b); if (l > 120) return null; return { q: `${a}${numWa(a)} ${b}의 최소공배수는?`, a: String(l) }; },
-  reduceQ: () => { const g = ri(2, 9), n0 = ri(1, 9); let d0 = ri(n0 + 1, 12); if (gcd(n0, d0) !== 1) return null; return { q: `${n0 * g}/${d0 * g}${numEul(d0 * g)} 기약분수로 나타내면?`, a: `${n0}/${d0}` }; },
+  reduceQ: () => { const g = ri(2, 9), n0 = ri(1, 9); let d0 = ri(n0 + 1, 12); if (gcd(n0, d0) !== 1) return null; return { q: `${n0 * g}/${d0 * g}${numEul(`${n0 * g}/${d0 * g}`)} 기약분수로 나타내면?`, a: `${n0}/${d0}` }; },
   diffDenAdd: () => {
     const d1 = ri(2, 10); let d2 = ri(2, 10); if (d1 === d2) return null;
     const n1 = ri(1, d1 - 1), n2 = ri(1, d2 - 1);
@@ -325,10 +341,11 @@ const T = {
   cuboidParts: () => {
     const solid = rnd() < 0.5 ? "직육면체" : "정육면체";
     const part = pick([["면", 6], ["모서리", 12], ["꼭짓점", 8]]);
-    const others = [6, 12, 8].filter((v) => v !== part[1]);
+    const others = [6, 12, 8, 4, 10].filter((v) => v !== part[1]).slice(0, 3);   // 정확히 3개(8way: 3지선다가 됐다)
     return { q: `${solid}의 ${part[0]}${eunNeun(part[0])} 모두 몇 개?`, a: String(part[1]), d: others.map(String) };
   },
-  changeWord: () => { const it = pick(ITEMS), a = ri(3, 9), b = ri(100, 900), c = ri(50, 500); if (b * a <= c) return null; return { q: `${it} ${b}원짜리 ${a}개를 사고 ${b * a + c}원을 내면 거스름돈은?`, a: String(c) }; },
+  // 8way(2026-10-10): 「동전 423원짜리 3개를 사고」 — 동전을 사는 문장·1원 단위 값은 아이에게 이상하다 → 가게 물건만 · 값은 10원 단위
+  changeWord: () => { const it = pick(SHOP_ITEMS), a = ri(3, 9), b = ri(10, 90) * 10, c = ri(5, 50) * 10; if (b * a <= c) return null; return { q: `${it} ${b}원짜리 ${a}개를 사고 ${b * a + c}원을 내면 거스름돈은 몇 원?`, a: String(c) }; },
   // 6-1
   fracDiv: () => {
     const n1 = ri(1, 9), d1 = ri(2, 10), n2 = ri(1, 9), d2 = ri(2, 10);
@@ -351,7 +368,7 @@ const T = {
   decDivWhole: () => { const b = ri(2, 9), q0 = ri(11, 99); const a = b * q0; if (a % 10 === 0) return null; return { q: `${decStr(a, 1)} ÷ ${b}`, a: decStr(q0, 1) }; },
   decDivDec: () => { const d = ri(2, 49), q0 = ri(2, 20); if (d % 10 === 0) return null; const a = d * q0; if (a % 10 === 0) return null; return { q: `${decStr(a, 1)} ÷ ${decStr(d, 1)}`, a: String(q0) }; },
   percentOf: () => { const p = pick([10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90]); const base = ri(2, 60) * (100 / gcd(p, 100)); if (base > 2000) return null; return { q: `${base}의 ${p}%는?`, a: String((base * p) / 100) }; },
-  discount: () => { const p = pick([10, 20, 25, 30, 40, 50]); const price = ri(10, 400) * 100; const off = (price * p) / 100; if (off !== Math.floor(off)) return null; return rnd() < 0.5 ? { q: `${price}원의 ${p}% 할인 후 가격은?`, a: String(price - off) } : { q: `${price}원짜리 물건을 ${p}% 할인하면 할인 금액은?`, a: String(off) }; },
+  discount: () => { const p = pick([10, 20, 25, 30, 40, 50]); const price = ri(10, 400) * 100; const off = (price * p) / 100; if (off !== Math.floor(off)) return null; return rnd() < 0.5 ? { q: `${price}원의 ${p}% 할인 후 가격은 몇 원?`, a: String(price - off) } : { q: `${price}원짜리 물건을 ${p}% 할인하면 할인 금액은 몇 원?`, a: String(off) }; },
   ratio: () => {
     const g = ri(2, 8), a0 = ri(1, 9); let b0 = ri(1, 9);
     if (a0 === b0 || gcd(a0, b0) !== 1) return null;
@@ -366,8 +383,15 @@ const T = {
     if (new Set(ds).size < 3) return null;
     return { q: `${a0 * g}:${b0 * g}${numEul(b0 * g)} 가장 간단한 비로 나타내면? (A:B)`, a: `${a0}:${b0}`, d: ds };
   },
+  // 6-1 「비와 비율」(공식 연결표 6-1-4 · [6수02-02][6수02-03]) — 비의 뜻과 비율을 분수·소수로. «간단한 비»는 6-2 (비의 성질 · [6수02-04])
+  ratioValue: () => {
+    const b = pick([2, 4, 5, 8, 10, 20, 25]), a = ri(1, b * 2); if (a === b) return null;
+    const asDec = rnd() < 0.5;
+    if (asDec) { const v = a / b; const s = String(v); if (s.length > 5) return null; return { q: `${a}:${b}의 비율을 소수로 나타내면?`, a: s }; }
+    const g = gcd(a, b); return { q: `${a}:${b}의 비율을 기약분수로 나타내면?`, a: `${a / g}/${b / g}`, d: [`${b / g}/${a / g}`, `${a}/${a + b}`, `${b}/${a + b}`].filter((v, i, arr) => v !== `${a / g}/${b / g}` && arr.indexOf(v) === i).slice(0, 3) };
+  },
   proportion: () => { const a = ri(2, 12), b = ri(2, 12), k = ri(2, 9); if (a === b) return null; return { q: `${a}:${b} = ${a * k}:□, □는?`, a: String(b * k) }; },
-  propShare: () => { const a = ri(1, 7); let b = ri(1, 7); if (a === b || gcd(a, b) !== 1) return null; const u = ri(2, 30); const total = (a + b) * u; return { q: `${total}개${eul("개")} ${a}:${b}로 나누면 큰 쪽은 몇 개?`, a: String(Math.max(a, b) * u) }; },
+  propShare: () => { const a = ri(1, 7); let b = ri(1, 7); if (a === b || gcd(a, b) !== 1) return null; const u = ri(2, 30); const total = (a + b) * u; return { q: `${total}개${eul("개")} ${a}:${b}${numEuro(b)} 나누면 큰 쪽은 몇 개?`, a: String(Math.max(a, b) * u) }; },
   cuboidVol: () => { const a = ri(2, 12), b = ri(2, 12), c = ri(2, 12); return { q: `가로 ${a}cm, 세로 ${b}cm, 높이 ${c}cm 직육면체의 부피는? (cm³)`, a: String(a * b * c) }; },
   cuboidSurf: () => { const a = ri(2, 10), b = ri(2, 10), c = ri(2, 10); return { q: `가로 ${a}cm, 세로 ${b}cm, 높이 ${c}cm 직육면체의 겉넓이는? (cm²)`, a: String(2 * (a * b + b * c + c * a)) }; },
   // 6-1 각기둥·각뿔 구성요소
@@ -406,7 +430,8 @@ const T = {
   wordSum: () => { const it = pick(ITEMS), a = ri(115, 480), b = ri(115, 480); return { q: `${it} ${a}개와 ${b}개를 합치면 모두 몇 개?`, a: String(a + b), ctx: { x: a, y: b, op: "+" } }; },
   wordDiff: () => { const it = pick(ITEMS), a = ri(300, 900), b = ri(100, a - 50); return { q: `${it} ${a}개에서 ${b}개를 팔면 남은 개수는?`, a: String(a - b), ctx: { x: a, y: b, op: "-" } }; },
   wordGroup: () => { const it = pick(ITEMS), a = ri(12, 60), b = ri(2, 9); return { q: `한 상자에 ${it} ${a}개씩 ${b}상자면 모두 몇 개?`, a: String(a * b), ctx: { x: a, y: b, op: "×" } }; },
-  wordTimes: () => { const nm = pick(NAMES), it = pick(ITEMS), a = ri(15, 99), b = ri(11, 30); return { q: `${nm}${iga(nm)} ${it}${eul(it)} 하루에 ${a}개씩 ${b}일 모으면 모두 몇 개?`, a: String(a * b), ctx: { x: a, y: b, op: "×" } }; },
+  // 8way(2026-10-10): 「하루에 96개씩 26일 모으면」 — 아이 한 명이 모으기엔 비현실 → 공장에서 «만드는» 물건으로 · «동안»
+  wordTimes: () => { const it = pick(MADE_ITEMS), a = ri(15, 99), b = ri(11, 30); return { q: `공장에서 하루에 ${it}${eul(it)} ${a}개씩 ${b}일 동안 만들면 모두 몇 개?`, a: String(a * b), ctx: { x: a, y: b, op: "×" } }; },
   wordShare: () => { const it = pick(ITEMS), b = ri(11, 25), q0 = ri(3, 20); const a = b * q0; return { q: `${it} ${a}개${eul("개")} ${b}명에게 똑같이 나누면 한 명당 몇 개?`, a: String(q0), ctx: { x: a, y: b, op: "÷" } }; },
   wordPercent: () => { const nm = pick(NAMES); const total = ri(4, 40) * 25; const p = pick([20, 25, 40, 50, 60, 75, 80]); const v = (total * p) / 100; if (v !== Math.floor(v)) return null; return { q: `${nm}${iga(nm)} ${total}쪽인 책의 ${p}%를 읽으면 몇 쪽?`, a: String(v) }; },
 
@@ -423,7 +448,7 @@ const T = {
   },
   w31Sub: () => {
     const it = pick(ITEMS), a = ri(350, 980), b = ri(120, a - 100);
-    return { q: `바구니에 ${it}${iga(it)} ${a}개 있었어요. ${b}개를 꺼내면 몇 개 남을까요?`, a: String(a - b), ctx: { x: a, y: b, op: "-" } };
+    return { q: `창고에 ${it}${iga(it)} ${a}개 있었어요. ${b}개를 꺼내면 몇 개 남을까요?`, a: String(a - b), ctx: { x: a, y: b, op: "-" } };
   },
   w31Mul: () => {
     const it = pick(ITEMS), a = ri(12, 89), b = ri(2, 9);
@@ -444,7 +469,7 @@ const T = {
   },
   w41Money: () => {
     const a = ri(2, 9), b = ri(1, 9), c = ri(1, 9);
-    return { q: `10000원짜리 ${a}장, 1000원짜리 ${b}장, 100원짜리 ${c}개면 모두 얼마?`, a: String(a * 10000 + b * 1000 + c * 100) };
+    return { q: `10000원짜리 ${a}장, 1000원짜리 ${b}장, 100원짜리 ${c}개면 모두 몇 원?`, a: String(a * 10000 + b * 1000 + c * 100) };
   },
   w41Angle: () => {
     const a = ri(30, 90), b = ri(30, 140 - a); const c = 180 - a - b; if (c < 20) return null;
@@ -452,9 +477,9 @@ const T = {
   },
   // --- 5-1: 혼합계산, 약수·배수, 이분모 분수 ± (넓이·평균·비율 단어 금지) ---
   w51Mixed: () => {
-    const nm = pick(NAMES), it = pick(ITEMS), price = ri(2, 9) * 100, n = ri(2, 8);
+    const nm = pick(NAMES), it = pick(SHOP_ITEMS), price = ri(2, 9) * 100, n = ri(2, 8);
     const paid = price * n + ri(1, 9) * 100;
-    return { q: `${nm}${iga(nm)} ${paid}원을 내고 ${price}원짜리 ${it}${eul(it)} ${n}개 샀어요. 거스름돈은 얼마?`, a: String(paid - price * n), ctx: { x: paid, y: price * n, op: "-" } };
+    return { q: `${nm}${iga(nm)} ${paid}원을 내고 ${price}원짜리 ${it}${eul(it)} ${n}개 샀어요. 거스름돈은 몇 원?`, a: String(paid - price * n), ctx: { x: paid, y: price * n, op: "-" } };
   },
   w51Lcm: () => {
     const a = ri(3, 12); let b = ri(3, 12); if (a === b) return null;
@@ -491,13 +516,13 @@ const T = {
   w61Percent: () => {
     const nm = pick(NAMES), total = ri(2, 20) * 25, p = pick([20, 24, 40, 60, 76, 80]);
     const v = (total * p) / 100; if (v !== Math.floor(v) || v < 2) return null;
-    return { q: `${nm}${iga(nm)} 다니는 학교 ${total}명 중 ${p}%가 안경을 써요. 몇 명일까요?`, a: String(v) };
+    return { q: `${nm}네 학교 학생 ${total}명 중 ${p}%가 안경을 써요. 안경을 쓴 학생은 몇 명일까요?`, a: String(v) };
   },
   w61Volume: () => {
     const a = ri(3, 12), b = ri(3, 12), c = ri(2, 9);
     // 문장은 짧게. 66자짜리 원안은 작은 폰에서 보기를 화면 밖으로 밀어냈고,
     // 길이 자체가 저학년에게 읽기 부담이다(v7 실측).
-    return { q: `가로 ${a}cm, 세로 ${b}cm, 높이 ${c}cm인 상자에 1cm 쌓기나무를 몇 개 넣을 수 있나요?`, a: String(a * b * c) };
+    return { q: `가로 ${a}cm, 세로 ${b}cm, 높이 ${c}cm인 상자에 한 모서리가 1cm인 쌓기나무를 몇 개 넣을 수 있나요?`, a: String(a * b * c) };
   },
 };
 
@@ -597,7 +622,7 @@ const SEMESTERS = {
     [T.wholeDivFrac, 250, 2, "fracdiv"],
     [T.fracDivWhole, 200, 2, "fracdiv"],
     [T.decDivWhole, 300, 2, "decdiv"],
-    [T.ratio, 300, 2, "ratio"],
+    [T.ratioValue, 300, 2, "ratio"],
     [T.percentOf, 270, 2, "ratio"],
     [T.cuboidVol, 180, 3, "solid"],
     [T.cuboidSurf, 200, 3, "solid"],
@@ -611,6 +636,7 @@ const SEMESTERS = {
   "6-2": [
     [T.decDivDec, 560, 2, "decdiv"],
     [T.discount, 400, 2, "percent"],
+    [T.ratio, 240, 2, "prop"],   // 간단한 비(비의 성질) — 2026-10-10 6-1 에서 옮김(공식 연결표)
     [T.proportion, 400, 2, "prop"],
     [T.propShare, 320, 2, "prop"],
     [T.circumference, 42, 3, "circle"],
