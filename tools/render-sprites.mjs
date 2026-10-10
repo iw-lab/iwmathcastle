@@ -21,7 +21,9 @@ const args = process.argv.slice(2), preview = args.includes('--preview');
 const names = args.filter((a) => !a.startsWith('--'));
 const REFMAP = { 'tower-minus': 'tower-plus' };   // 옛 tower-minus.webp 는 0바이트였다 — 짝인 더하기 탑 상자를 쓴다
 const yawOf = (n) => yaws[n] ?? (n.startsWith('monster-') ? 288 : 270);   // 옛 몬스터 그림은 오른쪽을 보는 3/4(왼쪽으로 갈 땐 게임이 뒤집는다)
-const WALK = (n) => fs.existsSync(path.join(REF, `${n}-walk-0.webp`));
+const WALKBASE = { 'wizard-idle': 'wizard' };   // 마법사 걷기 4장은 wizard-walk-N(대기 모델로 굽는다)
+const walkBase = (n) => WALKBASE[n] || n;
+const WALK = (n) => fs.existsSync(path.join(REF, `${walkBase(n)}-walk-0.webp`));
 // 옛 그림 상자 맞춤(첫 작업의 축척·기준점을 나머지 작업이 공유) — 흰 배경 RGB 원화는 흰색이 아닌 영역을 상자로
 const FIT = `import sys,json;from PIL import Image, ImageChops
 def refbox(ref):
@@ -118,7 +120,7 @@ g.convert('RGB').resize((W//2,ims[0].height//2)).save(sys.argv[1])`, o, ...pngs]
   // 옛 그림의 불투명 상자에 바닥 맞춤으로 넣는다 — 걷기 프레임은 0번의 축척·기준점을 그대로 쓴다
   const ref = path.join(REF, (REFMAP[n] || n) + '.webp'), out = path.join(OUT, n + '.webp');
   const jobs = [[pngs[0], ref, out]];
-  for (let i = 0; i < walkPngs.length; i++) jobs.push([walkPngs[i], path.join(REF, `${n}-walk-${i}.webp`), path.join(OUT, `${n}-walk-${i}.webp`)]);
+  for (let i = 0; i < walkPngs.length; i++) jobs.push([walkPngs[i], path.join(REF, `${walkBase(n)}-walk-${i}.webp`), path.join(OUT, `${walkBase(n)}-walk-${i}.webp`)]);
   execFileSync(PY, ['-c', FIT, JSON.stringify(jobs)]);
   ledger[n] = { glb: sha(path.join(GLB, n + '.glb')), yaw: yawOf(n), out: sha(out), walk: walkPngs.length, engine: 'Adobe Firefly Boards image→3D', render: 'tools/render-sprites.mjs' };
   console.log('✓', n, `yaw ${yawOf(n)}`);
