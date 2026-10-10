@@ -41,6 +41,14 @@ try {
   const msgs2 = await page.evaluate(() => window.__msgs); ok(!msgs2.some((t) => t.includes("쿨타임")), `건설을 눌러도 «쿨타임» 안내가 안 뜬다(${JSON.stringify(msgs2)})`);
   ok(JSON.stringify(s2.spellCooldowns) === JSON.stringify(s1.spellCooldowns) && s2.projectiles <= s1.projectiles, "건설 단추가 마법을 같이 쏘지 않는다");
   ok(s2.buildStep !== "idle" || sel, `건설 단추 → 건설 단계(${s2.buildStep} · 선택창 ${sel})`);
+  // 안내문구(«타워 다 가림» 2026-10-10): 폰에선 위쪽 띠 · 같은 문구는 몇 초 뒤 사라진다
+  await page.keyboard.press("Escape"); await sl(300);   // 선택창 닫기
+  const hint = async () => page.evaluate(() => { const e = document.getElementById("action-hint"); const r = e.getBoundingClientRect(); return { show: e.classList.contains("show") && +getComputedStyle(e).opacity > 0.1, top: Math.round(r.top), bottom: Math.round(r.bottom), text: e.textContent }; });
+  const h0 = await hint();
+  ok(h0.bottom < 412 * 0.3, `폰 안내문구는 위쪽 띠(${h0.top}~${h0.bottom}px · «${h0.text}»)`);
+  await sl(4500);
+  const h1 = await hint();
+  ok(!h1.show, `같은 안내는 몇 초 뒤 사라진다(4.5초 뒤 보임=${h1.show})`);
   await page.screenshot({ path: join(ROOT, "screenshots", "touchpad.png") });
   // 데스크톱(마우스)에서는 안 보인다
   const pc = await browser.newPage(); await pc.setViewport({ width: 1366, height: 768 }); await seedSkipHowTo(pc);

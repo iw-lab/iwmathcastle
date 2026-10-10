@@ -4339,3 +4339,28 @@ body.is-touch .touch-pad { display: block; position: absolute; inset: 0; pointer
 .tp-btn.build { width: 64px; height: 64px; background: radial-gradient(circle at 35% 30%, #8fe3ff, #2f8fd6 65%, #17507e); }
 .tp-btn:active { transform: translateY(2px) scale(0.96); }
 @media (max-height: 380px) { .tp-stick { width: 96px; height: 96px; } .tp-btn.atk { width: 70px; height: 70px; } .tp-btn.build { width: 56px; height: 56px; font-size: 22px; } }
+
+/* 폰·태블릿(터치): 안내는 위쪽 띠에 반투명·손 안 막음 — 아래쪽에 두면 길·타워를 덮었다(2026-10-10 실기 제보) */
+body.is-touch .action-hint {
+    top: var(--hint-top, 56px);
+    bottom: auto;
+    font-size: 12px;
+    padding: 4px 12px;
+    background: rgba(10, 14, 30, 0.55);
+    pointer-events: none;
+}
+body.is-touch .action-hint.show { opacity: 0.92; }
+
+/* 폰 가로 첫 화면 글자 세로 쌓임(2026-10-10 실기 «글씨 세로나열 심함», tools/qa-text-wrap.mjs):
+   ① 학년 단추 «3-2» — .diff-grade.diff-sem(26px)이 좁은 칸 규칙(18px)보다 구체적이라 이겨서 «3-/2» 로 접혔다
+   ② 아래 단추 3개 — 오른쪽 좁은 칸에 3단 + 좌우 패딩 22px 이라 «학/습/기/록» 한 글자씩 섰다 → 아이콘 위·글자 아래, 접지 않음 */
+.diff-grade, .menu-btn, .mode-name { white-space: nowrap; }
+@media (max-width: 899px) {
+    .menu-v11 .diff-grade.diff-sem { font-size: clamp(16px, 2.8vw, 22px); }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+    .menu-v11 .menu-actions .menu-btn { flex-direction: column; justify-content: center; gap: 2px; padding: 6px 4px; font-size: 12px; min-width: 0; }
+    .menu-v11 .menu-actions .menu-btn .btn-icon { margin: 0; font-size: 16px; }
+    .mode-btn { min-width: 0; }
+    .mode-name { font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+}

@@ -357,6 +357,8 @@ let tileIndex = []; // { el, x, y, cx, cy } — 타일 생성 시 1회 구축
 let lastFocusScanPos = { x: -9999, y: -9999 };
 const BUILD_REACH = 46; // 타일 중심에서 이 거리(px) 안이면 건설 가능
 let lastActionHint = "";
+let actionHintAt = 0;
+const HINT_TOUCH_MS = 3500;
 
 // --- [PERFORMANCE] Canvas 렌더링을 위한 변수 ---
 let dynamicCtx;
@@ -2329,6 +2331,8 @@ function installTouchPad() {
   const place = () => {
     const bar = document.getElementById("control-bar")?.getBoundingClientRect();
     pad.style.setProperty("--tp-bottom", `${Math.max(8, Math.round(bar && bar.height ? window.innerHeight - bar.top + 8 : 72))}px`);
+    const top = document.getElementById("info-bar")?.getBoundingClientRect();
+    document.documentElement.style.setProperty("--hint-top", `${Math.round(top && top.height ? top.bottom + 6 : 56)}px`);
   };
   place(); window.addEventListener("resize", place); setTimeout(place, 800);
   const R = 44, DEAD = 8;
@@ -2470,7 +2474,7 @@ function updateActionHint() {
     build = true;
   } else if (focusedTile) {
     text = isTouchLike
-      ? "🏗️ 빛나는 타일을 탭하면 타워를 지어요"
+      ? "🏗️ 여기에 지으려면 건설 단추 · 빛나는 칸을 탭해도 돼요"
       : "🏗️ <kbd>E</kbd> 여기에 타워 건설 · <kbd>Space</kbd> 마법 공격";
     build = true;
   } else if (!waveInProgress) {
@@ -2479,14 +2483,18 @@ function updateActionHint() {
       : "<kbd>Enter</kbd> 웨이브 시작 · <kbd>WASD</kbd> 이동 · 빛나는 타일에서 <kbd>E</kbd> 건설";
   } else {
     text = isTouchLike
-      ? "마법사를 끌어서 이동 · 화면을 탭하면 마법 공격"
+      ? "🕹️ 조이스틱으로 이동 · 공격 단추로 마법"
       : "<kbd>WASD</kbd> 이동 · <kbd>Space</kbd> 마법 공격 · 빛나는 타일에서 <kbd>E</kbd> 건설";
   }
   if (text !== lastActionHint) {
     lastActionHint = text;
     el.innerHTML = text;
+    actionHintAt = performance.now();
   }
-  el.classList.toggle("show", !!text);
+  // 폰(2026-10-10 «안내문구가 타워 다 가림»): 길·타워가 화면을 꽉 채워 어디에 둬도 무언가를 가린다 →
+  //   안내는 위쪽 띠에 반투명으로, 같은 문구는 HINT_TOUCH_MS 뒤 사라진다(문구가 바뀌면 다시 뜬다). 건설 선택 중 안내는 유지
+  const stale = isTouchLike && buildStep === "idle" && performance.now() - actionHintAt > HINT_TOUCH_MS;
+  el.classList.toggle("show", !!text && !stale);
   el.classList.toggle("hint-build", build);
 }
 
