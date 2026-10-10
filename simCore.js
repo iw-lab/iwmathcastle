@@ -288,3 +288,57 @@ export function waveModifier(wave, rand = Math.random) {
   if (rand() < 0.25) return null; // 25%는 변이 없는 평범한 웨이브
   return WAVE_MODIFIERS[Math.floor(rand() * WAVE_MODIFIERS.length)];
 }
+
+// ---------- v11: 게임 모드 (2026-10-10 사용자 「더 다양한 모드 · 중독성」) ----------
+// 모드는 «캠페인 규칙 위의 얇은 차이» — 밸런스 정본(위 함수들)은 그대로 쓰고 여기 숫자만 다르다.
+// 웨이브가 끝나면 문제를 푸는 흐름은 모든 모드에서 그대로다(사용자: 「한 웨이브 끝나고 문제 푸는 건 그대로」).
+export const GAME_MODES = {
+  normal:   { icon: "🏰", label: "일반", desc: "차근차근 성을 지켜요" },
+  bossrush: { icon: "👹", label: "보스 러시", desc: "보스만 연달아! 건너뛴 웨이브 몫 골드를 받아요", startWave: 4, step: 4, startGold: 500, skipGoldShare: 0.75 },
+  blitz:    { icon: "⚡", label: "번개전", desc: "몬스터가 빠르고 많이 몰려와요 · 골드도 더", speedFactor: 1.25, spawnFactor: 0.6, goldFactor: 1.2 },
+  chaos:    { icon: "🎲", label: "혼돈", desc: "웨이브마다 변이 카드가 바뀌어요", },
+};
+export const MODE_IDS = Object.keys(GAME_MODES);
+export const isMode = (m) => Object.prototype.hasOwnProperty.call(GAME_MODES, m);
+
+/** 이 모드에서 다음 웨이브 번호 — 보스 러시는 보스 웨이브(4의 배수)만 */
+export function nextWaveForMode(mode, wave) {
+  return mode === "bossrush" ? wave + GAME_MODES.bossrush.step : wave + 1;
+}
+/** 보스 러시 첫 웨이브 */
+export function startWaveForMode(mode) {
+  return mode === "bossrush" ? GAME_MODES.bossrush.startWave : 1;
+}
+/**
+ * 보스 러시에서 건너뛴 웨이브(from+1 .. to-1)의 «대략적 수입» — 처치 골드 + 정답 보상.
+ * 처치 골드 추정 = 마릿수 × 기본 12골드 × 웨이브 골드 배율. 모자라면 두 번째 보스에서 끝나고(실측 꿀꺽·하늘수비대),
+ * 넘치면 보스 러시가 일반보다 쉬워진다 → skipGoldShare 로 깎는다.
+ */
+export function bossrushSkipGold(fromWave, toWave) {
+  let g = 0;
+  for (let w = fromWave + 1; w < toWave; w++) g += monstersInWave(w) * 12 * waveGoldMultiplier(w) + answerReward(w);   // answerReward 는 골드 숫자
+  return Math.round(g * GAME_MODES.bossrush.skipGoldShare);
+}
+/** 혼돈 = 웨이브 2부터 매번 변이(초대형 보스 웨이브 20·25 배수는 보스가 변수라 쉰다) */
+export function chaosModifier(wave, rand = Math.random) {
+  if (wave < 2 || wave % 20 === 0 || wave % 25 === 0) return null;
+  return WAVE_MODIFIERS[Math.floor(rand() * WAVE_MODIFIERS.length)];
+}
+/** 모드별 이번 웨이브 변이 — 번개전은 «속도·골드» 를 평소 변이에 곱해 얹는다 */
+export function modeWaveModifier(mode, wave, rand = Math.random) {
+  if (mode === "chaos") return chaosModifier(wave, rand);
+  const base = waveModifier(wave, rand);
+  if (mode !== "blitz") return base;
+  const B = GAME_MODES.blitz;
+  return { ...(base || { id: "blitz", name: "번개전", icon: "⚡", desc: "빠르게 몰려온다" }),
+    speedFactor: (base?.speedFactor || 1) * B.speedFactor, goldFactor: (base?.goldFactor || 1) * B.goldFactor };
+}
+export function spawnIntervalForMode(mode, wave) {
+  return spawnIntervalMs(wave, 1) * (mode === "blitz" ? GAME_MODES.blitz.spawnFactor : 1);
+}
+/** 모드 메달 — 도달 웨이브 기준 동·은·금. 처음 딸 때만 축하(다시 들어올 이유) */
+export const MODE_MEDALS = { bossrush: [12, 24, 36], blitz: [10, 20, 30], chaos: [10, 20, 30] };
+export function medalTier(mode, wave) {
+  const t = MODE_MEDALS[mode]; if (!t) return -1;
+  return t.filter((x) => wave >= x).length - 1;   // -1 = 없음, 0 동, 1 은, 2 금
+}

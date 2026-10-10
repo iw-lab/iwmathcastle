@@ -2,3 +2,5 @@
 node_modules/
 game-assets-src/
 .wrangler/
+dist-kingsmath/v2/
+dist-kingsmath/*.png

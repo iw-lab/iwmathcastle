@@ -4183,3 +4183,92 @@ body.is-touch kbd {
 .tw-awaken { color: #ffd166; }
 .tw-level { color: var(--accent-cyan); }
 .tw-next { color: var(--accent-green); }
+
+/* ================= v11 첫 화면 (2026-10-10 「첫 UI도 직관적이고 세련되게」) =================
+   대표 그림 배너 + ① 모드 → ② 학년(누르면 시작) 두 단계 + 옆 카드(학교 대항전·오늘의 도전·랭킹).
+   가로(≥ 900px) 2단 · 그 아래 1단. 스크롤은 컨테이너 안에서만. */
+#difficultyModal { overflow-y: auto; align-items: flex-start; padding: 2vh 0; }
+.menu-container.menu-v11 {
+    max-width: 1120px; width: 96%; padding: 0 0 14px; text-align: left; overflow: hidden;
+    background: rgba(8, 12, 28, 0.78); border: 1px solid rgba(120, 190, 255, 0.16);
+}
+.menu-hero { position: relative; height: clamp(150px, 30vh, 300px); overflow: hidden; }
+.menu-hero .hero-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; }
+.menu-hero::after { content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(5, 8, 22, 0.85) 0%, rgba(5, 8, 22, 0.35) 45%, transparent 70%), linear-gradient(0deg, rgba(8, 12, 28, 0.95) 0%, transparent 40%); }
+.menu-hero .hero-text { position: absolute; left: clamp(16px, 3vw, 36px); bottom: clamp(12px, 3vh, 28px); z-index: 1; }
+.menu-hero .brand-title { margin: 0 0 2px; font-size: 12px; letter-spacing: 4px; color: #9ad8ff; }
+.menu-hero .main-title { margin: 0; font-size: clamp(30px, 5vw, 58px); line-height: 1.05; color: #ffe27a;
+    text-shadow: 0 3px 0 #6b3d00, 0 6px 24px rgba(0, 0, 0, 0.6); }
+.menu-hero .hero-tag { margin: 6px 0 0; font-size: clamp(14px, 1.6vw, 18px); color: #e8f1ff; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8); }
+.menu-hero .version-badge { position: absolute; right: 14px; top: 12px; z-index: 1; }
+.menu-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; padding: 16px clamp(12px, 2vw, 24px) 4px; }
+@media (max-width: 899px) { .menu-grid { grid-template-columns: 1fr; } }
+.menu-main, .menu-side { min-width: 0; }
+.menu-v11 .daily-panel, .menu-v11 .rank-panel, .menu-v11 .school-panel { max-width: none; margin: 0 0 12px; }
+.step-label { display: flex; align-items: center; gap: 10px; margin: 4px 0 10px; font-size: 17px; color: #e8f1ff; text-align: left; }
+.step-no { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #ffd34d, #ff9f1c);
+    color: #2a1600; font-weight: 800; font-size: 15px; box-shadow: 0 0 12px rgba(255, 200, 60, 0.5); }
+.mode-section { margin-bottom: 14px; }
+.mode-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 560px) { .mode-options { grid-template-columns: repeat(2, 1fr); } }
+.mode-btn { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 112px; padding: 10px 12px; text-align: left; cursor: pointer;
+    background: rgba(20, 30, 60, 0.75); border: 2px solid rgba(120, 160, 255, 0.18); border-radius: 14px; color: #dbe4f0; transition: transform .12s, border-color .12s, box-shadow .12s; }
+.mode-btn:hover { transform: translateY(-2px); border-color: rgba(255, 211, 77, 0.6); }
+.mode-btn.active { border-color: #ffd34d; background: linear-gradient(160deg, rgba(255, 211, 77, 0.18), rgba(20, 30, 60, 0.85)); box-shadow: 0 0 18px rgba(255, 211, 77, 0.35); }
+.mode-icon { font-size: 28px; line-height: 1; }
+.mode-name { font-size: 16px; font-weight: 800; color: #fff; }
+.mode-desc { font-size: 12px; color: #a9bad6; line-height: 1.35; }
+.mode-best { margin-top: auto; font-size: 12px; color: #ffd166; }
+.menu-v11 .difficulty-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: none; }
+.menu-v11 .difficulty-btn { min-height: 84px; }
+.menu-v11 .menu-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+.menu-v11 .menu-privacy { padding: 0 clamp(12px, 2vw, 24px); text-align: center; }
+/* 학교 대항전 카드 */
+.school-panel { padding: 12px 14px; background: linear-gradient(160deg, rgba(60, 40, 120, 0.55), rgba(15, 22, 45, 0.8)); border: 1px solid rgba(179, 136, 255, 0.45); border-radius: 14px; }
+.school-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.school-title { font-size: 15px; font-weight: 800; color: #d6c2ff; }
+.school-title small { font-size: 11px; color: #a99bd0; font-weight: 600; }
+.school-me { display: flex; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.06); }
+.school-me-name { font-weight: 800; color: #fff; }
+.school-me-rank { color: #ffd166; font-size: 13px; }
+.school-gap { margin: 6px 0 0; font-size: 13px; color: #7ee8a2; font-weight: 700; }
+.school-note { margin: 0 0 6px; font-size: 13px; color: #c9d4ea; }
+.school-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.school-row { display: grid; grid-template-columns: 28px 1fr auto; gap: 6px; font-size: 14px; color: #dbe4f0; }
+.school-row.mine { color: #ffe27a; font-weight: 800; }
+.school-row.empty { display: block; color: #9fb3cc; font-size: 13px; }
+.school-modal { max-width: 460px; }
+.school-search { display: grid; grid-template-columns: 90px 1fr auto; gap: 8px; margin: 10px 0; }
+.school-search select, .school-search input { padding: 10px; border-radius: 10px; border: 1px solid rgba(120, 190, 255, 0.3); background: rgba(10, 16, 34, 0.9); color: #fff; font-size: 15px; }
+.school-msg { font-size: 13px; color: #a9bad6; min-height: 18px; }
+.school-results { display: flex; flex-direction: column; gap: 6px; max-height: 40vh; overflow-y: auto; margin-bottom: 10px; }
+.school-pick { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(179, 136, 255, 0.35); background: rgba(40, 30, 80, 0.6); color: #fff; font-size: 15px; cursor: pointer; }
+.school-pick span { color: #a99bd0; font-size: 13px; }
+@media (orientation: landscape) and (max-height: 500px) { .menu-hero { height: 120px; } .mode-btn { min-height: 92px; } .mode-desc { display: none; } }
+/* v11 손질: 제목은 오른쪽(왼쪽 마법사를 가리지 않게) · 학년 버튼은 칸을 꽉 채운다 */
+.menu-hero::after { background: linear-gradient(270deg, rgba(5, 8, 22, 0.88) 0%, rgba(5, 8, 22, 0.4) 40%, transparent 65%), linear-gradient(0deg, rgba(8, 12, 28, 0.95) 0%, transparent 40%); }
+.menu-hero .hero-text { left: auto; right: clamp(16px, 3vw, 36px); text-align: right; }
+.menu-hero .version-badge { right: auto; left: 14px; }
+.menu-v11 .difficulty-btn { width: 100%; }
+/* v11 작은 가로 화면(폰): 학년 버튼이 첫 화면 안에 들어오게 — 얇은 배너 · 2단 · 한 줄 모드 카드 */
+@media (orientation: landscape) and (max-height: 500px) {
+    #difficultyModal { padding: 0; }
+    .menu-container.menu-v11 { width: 100%; border-radius: 0; }
+    .menu-hero { height: 54px; }
+    .menu-hero .hero-text { bottom: 6px; }
+    .menu-hero .main-title { font-size: 26px; }
+    .menu-hero .hero-tag, .menu-hero .brand-title { display: none; }
+    .menu-grid { grid-template-columns: 1.6fr 1fr; gap: 10px; padding-top: 8px; }
+    .step-label { margin: 2px 0 6px; font-size: 14px; }
+    .step-no { width: 22px; height: 22px; font-size: 13px; }
+    .mode-section { margin-bottom: 6px; }
+    .mode-btn { min-height: 0; flex-direction: row; align-items: center; gap: 6px; padding: 6px 8px; }
+    .mode-icon { font-size: 18px; }
+    .mode-name { font-size: 13px; }
+    .mode-best { display: none; }
+    .menu-v11 .difficulty-options { gap: 6px; }
+    .menu-v11 .difficulty-btn { min-height: 50px; padding: 4px; }
+    .menu-v11 .difficulty-btn .diff-label { display: none; }
+    .menu-v11 .menu-actions { margin-top: 8px; }
+}

@@ -14,6 +14,9 @@ import {
   normalizeDifficulty,
   hashIp,
 } from "./_util.js";
+import { isCode, runPoints, SCHOOL, SCHOOL_SCHEMA } from "./_school.js";
+// v11 모드 — 일반 판만 개인 랭킹(일·주·월·명예의 전당)에 오른다. 모드마다 점수의 뜻이 달라 같은 표에 섞으면 불공정하다.
+const MODES = new Set(["normal", "bossrush", "blitz", "chaos"]);
 
 // 세션 토큰 수명 캡: 사전 발급해 쌓아두는 우회의 효용 제한 (정상 플레이는 12시간 미만)
 const TOKEN_MAX_AGE_MS = 12 * 3600e3;
@@ -35,7 +38,8 @@ export async function onRequestPost(context) {
     } catch {
       return Response.json({ error: "유효하지 않은 요청입니다." }, { status: 400 });
     }
-    const { name, score, wave, difficulty, token, sessionWaves } = body || {};
+    const { name, score, wave, difficulty, token, sessionWaves, school, mode } = body || {};
+    const gameMode = MODES.has(mode) ? mode : "normal";
 
     // --- ④ 닉네임 화이트리스트 (DB 접근 전에 — CPU만 쓰는 검사를 먼저 통과시킨다) ---
     // v7: 자유 입력 폐지. nickname.js 목록으로 만들 수 있는 조합만 받는다.
@@ -152,8 +156,37 @@ export async function onRequestPost(context) {
       );
     }
 
-    // --- 랭킹 저장 (일·주·월 키) ---
+    // --- 🏫 학교 대항전: 학교 «합계»에만 더한다(닉네임과 학교를 잇는 행은 만들지 않는다) ---
+    //     점수 = 이번 세션에 푼 웨이브 수(sw — 위에서 토큰 나이로 검증됨, 상한 RUN_MAX) · 같은 출처 하루 DAY_CAP
     const dayKey = kstDayKey();
+    let schoolGranted = 0;
+    if (isCode(school)) {
+      try {
+        await db.batch(SCHOOL_SCHEMA.map((q) => db.prepare(q)));
+        const known = await db.prepare("SELECT code FROM schools WHERE code = ?").bind(String(school)).first();
+        const want = runPoints(sw);
+        if (known && want > 0) {
+          await db.prepare("INSERT OR IGNORE INTO school_daily (who, day_key, points) VALUES (?, ?, 0)").bind(ip, dayKey).run();
+          // 차감과 적립은 한 batch(= D1 트랜잭션) — 적립이 실패하면 차감도 롤백된다(xval 2026-10-10).
+          // 적립 INSERT 는 바로 앞 조건부 UPDATE 가 행을 바꿨을 때만(changes() > 0) 들어간다.
+          // 동시 제출에 밀려 조건부 UPDATE 가 빗나가면 남은 한도를 다시 읽어 최대 3번 시도한다.
+          for (let i = 0; i < 3 && !schoolGranted; i++) {
+            const cur = (await db.prepare("SELECT points FROM school_daily WHERE who = ? AND day_key = ?").bind(ip, dayKey).first())?.points || 0;
+            const grant = Math.max(0, Math.min(want, SCHOOL.DAY_CAP - cur));
+            if (grant <= 0) break;
+            const [up] = await db.batch([
+              db.prepare("UPDATE school_daily SET points = points + ? WHERE who = ? AND day_key = ? AND points = ?").bind(grant, ip, dayKey, cur),
+              db.prepare("INSERT INTO school_points (code, week_key, points, runs) SELECT ?, ?, ?, 1 WHERE changes() > 0 ON CONFLICT(code, week_key) DO UPDATE SET points = points + excluded.points, runs = runs + 1").bind(String(school), weekKeyOf(dayKey), grant),
+            ]);
+            if (up.meta?.changes > 0) schoolGranted = grant;
+          }
+          if (schoolGranted) try { context.waitUntil(caches.default.delete(new Request(`${new URL(request.url).origin}/api/school-board/v1/${weekKeyOf(dayKey)}`))); } catch {}
+        }
+      } catch (e) { console.error("school points error:", e); }   // 학교 점수 실패가 개인 기록 등록을 막지 않는다
+    }
+    if (gameMode !== "normal") return Response.json({ success: true, enteredHof: false, ranked: false, school: schoolGranted });
+
+    // --- 랭킹 저장 (일·주·월 키) ---
     await db
       .prepare(
         "INSERT INTO rankings (name, score, wave, difficulty, ranking_date, week_key, month_key) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -202,7 +235,7 @@ export async function onRequestPost(context) {
       );
     } catch {}
 
-    return Response.json({ success: true, enteredHof });
+    return Response.json({ success: true, enteredHof, ranked: true, school: schoolGranted });
   } catch (e) {
     console.error("submit-score error:", e);
     return Response.json(

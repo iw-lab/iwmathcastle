@@ -42,3 +42,9 @@ CREATE INDEX IF NOT EXISTS idx_hof_score ON hall_of_fame(score DESC);
 CREATE INDEX IF NOT EXISTS idx_submit_log_ip_ts ON submit_log(ip, ts);
 -- 세션 청소(DELETE ... WHERE created_at < ?)가 풀스캔이 되지 않게 (발급 엔드포인트 DoS 방어)
 CREATE INDEX IF NOT EXISTS idx_sessions_created ON sessions(created_at);
+
+-- v11 (2026-10-10): 학교 대항전 — 학교 합계만(닉네임과 학교를 잇지 않는다). 함수가 첫 요청 때 CREATE IF NOT EXISTS 로도 만든다(functions/api/_school.js SCHOOL_SCHEMA).
+CREATE TABLE IF NOT EXISTS schools (code TEXT PRIMARY KEY, name TEXT NOT NULL, short TEXT NOT NULL, sido TEXT, created_at TEXT DEFAULT (datetime('now')));
+CREATE TABLE IF NOT EXISTS school_points (code TEXT NOT NULL, week_key TEXT NOT NULL, points INTEGER NOT NULL DEFAULT 0, runs INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (code, week_key));
+CREATE INDEX IF NOT EXISTS idx_school_points_week ON school_points(week_key, points DESC);
+CREATE TABLE IF NOT EXISTS school_daily (who TEXT NOT NULL, day_key TEXT NOT NULL, points INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (who, day_key));

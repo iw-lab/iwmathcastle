@@ -10,6 +10,7 @@ import {
   RANDOM_TOWER_PROBABILITY,
 } from "./gameData.js";
 import { mathProblems, loadGradeProblems } from "./problems.js";
+import { initSchoolPicker, renderSchoolPanel, mySchool } from "./school.js";
 import * as simCore from "./simCore.js";
 import { quality, detectLowEnd, feedFrameTime } from "./perfQuality.js";
 import {
@@ -209,6 +210,24 @@ let gameClock = 0;
  */
 const MAX_SIM_FRAME_MS = 50;
 let currentWaveModifier = null; // v6: 웨이브 변이 (웨이브 30+)
+// v11: 게임 모드(일반·보스 러시·번개전·혼돈) — 첫 화면에서 고르고 학년을 누르면 그 모드로 시작한다.
+//      규칙 숫자는 simCore.GAME_MODES 가 단일 진실원. 이어하기 세이브에도 들어간다.
+const MODE_KEY = "mathcastle:mode";
+let gameMode = (() => { try { const m = localStorage.getItem(MODE_KEY); return simCore.isMode(m) ? m : "normal"; } catch { return "normal"; } })();
+/** 웨이브가 끝나고(문제를 푼 뒤) 다음 웨이브로 — 보스 러시는 다음 보스로 건너뛰며 건너뛴 몫 골드를 받는다 */
+const MODE_BEST_KEY = "mathcastle:modeBest";
+function modeBestAll() { try { return JSON.parse(localStorage.getItem(MODE_BEST_KEY) || "{}") || {}; } catch { return {}; } }
+function modeBestOf(mode) { const v = Number(modeBestAll()[mode]); return Number.isFinite(v) && v > 0 ? Math.min(v, 999) : 0; }
+function recordModeBest(mode, wave) { try { const all = modeBestAll(); if (!(Number(all[mode]) >= wave)) { all[mode] = wave; localStorage.setItem(MODE_BEST_KEY, JSON.stringify(all)); } } catch { /* 저장 실패는 게임을 막지 않는다 */ } }
+function advanceWave() {
+  const next = simCore.nextWaveForMode(gameMode, currentWave);
+  if (gameMode === "bossrush") {
+    const bonus = simCore.bossrushSkipGold(currentWave, next);
+    gold += bonus;
+    showMessage(`👹 다음 보스까지 건너뛰기 — 보너스 골드 +${bonus}`);
+  }
+  currentWave = next;
+}
 // v8: 집중력 — 이번 판의 학습 성과가 그대로 타워 화력이 된다.
 // 정답 +1, 오답 -2, 0~40. 규칙은 simCore가 단일 진실원.
 let focusPoints = 0;
@@ -680,6 +699,36 @@ function questState() {
   };
 }
 
+/** v11: 첫 화면 ① 모드 고르기 — 카드 4장(아이콘·이름·한 줄 규칙·내 최고·메달) */
+function renderModeOptions() {
+  const box = document.getElementById("modeOptions");
+  if (!box) return;
+  box.textContent = "";
+  for (const id of simCore.MODE_IDS) {
+    const m = simCore.GAME_MODES[id];
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "mode-btn" + (id === gameMode ? " active" : "");
+    b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", id === gameMode ? "true" : "false");
+    const best = id === "normal" ? achievementSystem.bestOf("wave") : modeBestOf(id);
+    const tier = simCore.medalTier(id, best);
+    const ic = document.createElement("span"); ic.className = "mode-icon"; ic.textContent = m.icon;
+    const nm = document.createElement("span"); nm.className = "mode-name"; nm.textContent = m.label;
+    const ds = document.createElement("span"); ds.className = "mode-desc"; ds.textContent = m.desc;
+    const st = document.createElement("span"); st.className = "mode-best";
+    st.textContent = best > 0 ? `${tier >= 0 ? ["🥉", "🥈", "🥇"][tier] + " " : ""}최고 웨이브 ${best}` : "처음 도전!";
+    b.append(ic, nm, ds, st);
+    b.addEventListener("click", () => {
+      gameMode = id;
+      try { localStorage.setItem(MODE_KEY, id); } catch { /* 저장 실패해도 이번 판은 이 모드 */ }
+      sfx.init().then(() => sfx.play("blip"));
+      renderModeOptions();
+    });
+    box.appendChild(b);
+  }
+}
+
 function renderDailyPanel() {
   const panel = document.getElementById("dailyPanel");
   const list = document.getElementById("dailyList");
@@ -872,7 +921,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // v5 QA 훅 (고유 전역 키 — window.game 금지 교훈). 프로덕션에서도 무해(읽기+시전 테스트용).
   window.__mathcastle = {
     getState: () => ({
-      gold, castleHealth, currentWave, wizardLevel, activeSpell,
+      gold, castleHealth, currentWave, wizardLevel, activeSpell, gameMode,
       monsters: monsters.length, towers: towers.length,
       projectiles: projectiles.length,
       gameRunning, gamePaused,
@@ -1202,6 +1251,8 @@ window.addEventListener("DOMContentLoaded", () => {
   achievementSystem.installFlushOnExit(); // v8: 탭 닫힘 시 업적 진행 유실 방지
   setupReportModal();
   renderDailyPanel();
+  renderModeOptions();   // v11
+  initSchoolPicker(); renderSchoolPanel();   // v11 학교 대항전
 
   // [V2] 첫 사용자 인터랙션에서 음악 시작
   const startMusicOnce = () => {
@@ -1222,6 +1273,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
 async function initializeGame(difficulty, savedState = null) {
   difficulty = migrateDifficulty(difficulty); // v6: 구 학년 표기("3") → 학기 표기("3-1")
+  // v11: 이어하기는 저장된 모드로(새 판은 첫 화면에서 고른 모드). 판 시작 기록 비교(bestWaveAtRunStart)보다 먼저 정한다
+  if (savedState && simCore.isMode(savedState.gameMode)) gameMode = savedState.gameMode;
+  else if (savedState) gameMode = "normal";
   if (gameInitializing) return;   // 느린 회선에서 학년 버튼 연타 → 초기화 중복 방지
   gameInitializing = true;
   try {
@@ -1338,7 +1392,7 @@ async function initializeGame(difficulty, savedState = null) {
   masteredThisRun = 0;
   noDamageStreak = 0;
   bestNoDamageStreak = 0;
-  bestWaveAtRunStart = achievementSystem.bestOf("wave");
+  bestWaveAtRunStart = gameMode === "normal" ? achievementSystem.bestOf("wave") : modeBestOf(gameMode);
   blessings = blessing.initialState();
   blessingOpen = false;
   WIZARD_AUTO_ATTACK_STATS.cooldown = WIZARD_AUTO_ATTACK_STATS.initialCooldown; // 축복으로 줄인 쿨다운을 새 판에서 되돌린다
@@ -1362,11 +1416,17 @@ async function initializeGame(difficulty, savedState = null) {
   shownProblemIds = new Set();
   comboSystem.break();
 
+  // v11: 보스 러시는 첫 보스(웨이브 4)에서, 시작 골드를 더 얹고 시작한다(세이브·체크포인트는 그 값을 그대로 쓴다)
+  if (!savedState && gameMode === "bossrush") {
+    currentWave = simCore.startWaveForMode(gameMode);
+    gold += simCore.GAME_MODES.bossrush.startGold;
+  }
   if (savedState) {
     gold = savedState.gold;
     score = savedState.score;
     castleHealth = savedState.castleHealth;
     currentWave = savedState.currentWave;
+    gameMode = simCore.isMode(savedState.gameMode) ? savedState.gameMode : "normal";
     wizardLevel = savedState.wizardLevel;
     wizardPosition = savedState.wizardPosition;
     WIZARD_AUTO_ATTACK_STATS.damage = savedState.wizardDamage;
@@ -3350,8 +3410,8 @@ function startWave() {
   waveComposition = simCore.buildWaveComposition(currentWave, dailyRng);
 
   // v6: 웨이브 변이 (30+) — 후반 조합 변주 (역시 일일 시드)
-  currentWaveModifier = simCore.waveModifier(currentWave, dailyRng);
-  if (currentWaveModifier) {
+  currentWaveModifier = simCore.modeWaveModifier(gameMode, currentWave, dailyRng);   // v11: 모드(혼돈=매 웨이브 · 번개전=속도·골드)
+  if (currentWaveModifier && currentWaveModifier.id !== "blitz") {
     showMessage(
       `${currentWaveModifier.icon} 웨이브 변이: ${currentWaveModifier.name} — ${currentWaveModifier.desc}`,
     );
@@ -3414,7 +3474,7 @@ function pumpSpawner() {
       //    성겨지고 **난이도가 조용히 내려간다**(같은 계열의 과거 결함: setInterval 간격을
       //    시작 시 1회만 계산해 배속이 그 경로만 옛 비율로 남겼던 건). 예정 시각에 더하면
       //    위 while이 밀린 몫을 실제로 따라잡는다.
-      nextSpawnAt += simCore.spawnIntervalMs(currentWave, 1);
+      nextSpawnAt += simCore.spawnIntervalForMode(gameMode, currentWave);
       guard++;
     } else {
       spawnActive = false;
@@ -5113,7 +5173,7 @@ function checkAnswer(answer, clickedBtn) {
 
   isForcedProgress = false;
 
-  currentWave++;
+  advanceWave();
   updateFullUI();
   setTimeout(
     () => {
@@ -5205,7 +5265,7 @@ function handleTimeOut() {
   checkGameOver();
 
   isForcedProgress = false;
-  currentWave++;
+  advanceWave();
   updateFullUI();
   setTimeout(() => {
     hideModal(gameElements.mathModal);
@@ -5235,7 +5295,8 @@ function checkWaveCompletion() {
 
     // [V2] 웨이브 클리어 업적 체크
     const clearTime = (gameClock - waveStartTime) / 1000;
-    checkAchievements("wave_clear", {
+    // v11: 업적의 «웨이브 기록»은 일반 모드만 — 보스 러시는 4씩 건너뛰어 웨이브 업적을 공짜로 딴다
+    if (gameMode === "normal") checkAchievements("wave_clear", {
       wave: currentWave,
       clearTime,
       damageTaken: waveDamageTaken,
@@ -5271,7 +5332,8 @@ function checkWaveCompletion() {
     // v5.1: 스테이지(5웨이브) 클리어 — 다음 스테이지 시작 스냅샷을 체크포인트로 보관.
     // 타워·골드·마법사 상태가 전부 스냅샷에 들어가므로 다음 스테이지에서도 그대로 유지되고,
     // 게임오버가 나도 이 체크포인트부터 다시 시작할 수 있다.
-    if (currentWave % stageProgress.WAVES_PER_STAGE === 0) {
+    // v11: 스테이지 체크포인트는 «일반» 모드만 — 보스 러시(4·8·…·20)가 일반 진행표를 덮으면 안 된다
+    if (gameMode === "normal" && currentWave % stageProgress.WAVES_PER_STAGE === 0) {
       const clearedStage = stageProgress.stageOfWave(currentWave);
       // 체크포인트는 **두 번 찍는다**.
       //  ① 지금 즉시 — 축복 화면에서 탭을 닫아도 스테이지 진행은 반드시 남아야 한다.
@@ -5317,6 +5379,8 @@ function checkGameOver() {
     }
     document.getElementById("finalScore").textContent = score;
     document.getElementById("finalWave").textContent = currentWave;
+    // v11 학교 대항전: 학교를 골랐으면 판이 끝날 때 자동으로 등록한다(학교 점수는 등록해야 들어간다 — 버튼을 몰라 놓치지 않게)
+    if (mySchool()) setTimeout(() => { const b = document.getElementById("submitScoreBtn"); if (b && !b.disabled && gameElements.gameOverModal.classList.contains("show")) b.click(); }, 1500);
 
     // v9: 이번 판이 무엇을 남겼는지 **게임오버 화면에서만** 보여준다.
     //   ⚠️ 플레이 중 "최고 기록까지 N웨이브" 카운트다운은 일부러 넣지 않았다.
@@ -5339,6 +5403,15 @@ function checkGameOver() {
         (anchor || modal.firstElementChild || modal).appendChild(runLine);
       }
       const parts = [];
+      // v11: 모드 판은 모드 기록·메달(처음 딸 때 한 번 축하) — 게임오버 화면에서만(압박 장치 금지 원칙 유지)
+      if (gameMode !== "normal") {
+        const m = simCore.GAME_MODES[gameMode], before = simCore.medalTier(gameMode, prevBest), now = simCore.medalTier(gameMode, currentWave);
+        recordModeBest(gameMode, currentWave);
+        parts.push(`${m.icon} ${m.label}`);
+        if (now > before) parts.push(`${["🥉 동", "🥈 은", "🥇 금"][now]}메달 획득!`);
+        const nextT = simCore.MODE_MEDALS[gameMode].find((x) => x > Math.max(prevBest, currentWave));
+        if (nextT) parts.push(`다음 메달: 웨이브 ${nextT}`);
+      }
       if (isNewRecord) parts.push(`🏅 새 기록! 웨이브 ${currentWave} (이전 최고 ${prevBest})`);
       else if (prevBest > 0) parts.push(`이번 웨이브 ${currentWave} · 내 최고 ${prevBest}`);
       if (masteredThisRun > 0) parts.push(`🎓 완전히 내 것이 된 문제 ${masteredThisRun}개`);
@@ -5474,7 +5547,7 @@ function forceNextWave(isFromError = false) {
 
   waveInProgress = false;
   if (isFromError) {
-    currentWave++;
+    advanceWave();
     gamePaused = false;
     startWave();
   } else {
@@ -5494,7 +5567,7 @@ async function saveAndSubmit() {
   const finalPlayerName = currentNickname();
 
   try {
-    await submitScore(finalPlayerName, score, currentWave, selectedDifficulty);
+    await submitScore(finalPlayerName, score, currentWave, selectedDifficulty, gameMode);
 
     gameRunning = false;
     stopSpawnLoop();
@@ -5601,8 +5674,8 @@ function setupEventListeners() {
       requestGameFullscreen();
       const difficulty = e.currentTarget.dataset.difficulty;
       const progress = stageProgress.getProgress(difficulty);
-      // 도달한 스테이지가 있으면 스테이지 선택, 처음이면 바로 시작
-      if (progress.highest > 1) {
+      // 도달한 스테이지가 있으면 스테이지 선택, 처음이면 바로 시작 — v11: 스테이지는 «일반» 모드 전용
+      if (gameMode === "normal" && progress.highest > 1) {
         openStageSelect(difficulty, progress);
       } else {
         initializeGame(difficulty);
@@ -5662,7 +5735,7 @@ function setupEventListeners() {
       btn.disabled = true;
       btn.textContent = "등록 중...";
       try {
-        await submitScore(playerName, score, currentWave, selectedDifficulty);
+        await submitScore(playerName, score, currentWave, selectedDifficulty, gameMode);
         localStorage.removeItem("towerDefenseSave");
         localStorage.removeItem("mathcastle:save");
         showMessage("랭킹 등록 완료!");
@@ -6159,6 +6232,7 @@ function restartGame() {
   impactFx.resetShake();
   resetFlashBudget();
   renderDailyPanel(); // v8: 오늘의 도전 진행이 바뀌었을 수 있다
+  renderModeOptions(); renderSchoolPanel();   // v11: 모드 기록·학교 순위가 바뀌었을 수 있다
   // v10: 방금 내 점수가 올라갔을 수 있다 — 캐시를 건너뛰고 새로 받는다
   refreshRankingPanel();
   hideModal(gameElements.gameOverModal);
@@ -6471,6 +6545,7 @@ function buildGameState() {
   flushPendingBoxes();
   return {
     difficulty: selectedDifficulty,
+    gameMode,
     gold,
     score,
     castleHealth,

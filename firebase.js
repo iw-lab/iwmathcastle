@@ -1,6 +1,7 @@
 // firebase.js - Cloudflare D1 API 클라이언트 (v6: 세션 토큰 + 일간·주간·월간 랭킹)
 import { showMessage } from "./utils.js";
 import * as ui from "./ui.js";
+import { mySchool } from "./school.js";
 
 const API_BASE = "/api";
 
@@ -41,7 +42,7 @@ export function startGameSession(baseWave = 1) {
 
 // 실패하면 반드시 throw 한다 — 호출측(main.js)이 성공으로 오인해 이어하기 세이브를
 // 지워버리면 정상 플레이 기록이 그대로 증발하기 때문(교차검증 지적).
-export async function submitScore(playerName, score, wave, difficulty) {
+export async function submitScore(playerName, score, wave, difficulty, mode = "normal") {
   if (!playerName || !playerName.trim()) {
     showMessage("이름을 입력해주세요!");
     throw new Error("이름 없음");
@@ -73,7 +74,10 @@ export async function submitScore(playerName, score, wave, difficulty) {
         wave,
         difficulty,
         token: sessionToken,
-        sessionWaves: Math.max(1, wave - sessionBaseWave + 1),
+        // 보스 러시는 웨이브가 4씩 건너뛰므로 «실제로 치른 웨이브 수»로 환산한다(서버 최소 플레이 시간·학교 점수의 기준)
+        sessionWaves: mode === "bossrush" ? Math.max(1, Math.round((wave - sessionBaseWave) / 4) + 1) : Math.max(1, wave - sessionBaseWave + 1),
+        mode,                              // v11: 일반만 개인 랭킹 · 모드는 학교 점수만
+        school: mySchool()?.code,          // v11: 학교 대항전 — 코드만(서버는 학교 합계에만 더한다)
       }),
     });
 
@@ -92,6 +96,8 @@ export async function submitScore(playerName, score, wave, difficulty) {
   }
 
   // 여기부터는 등록 성공 — UI 갱신이 실패해도 기록은 이미 서버에 있으므로 throw 하지 않는다
+  if (data.school > 0) setTimeout(() => showMessage(`🏫 우리 학교 점수 +${data.school}점!`), 1600);
+  if (data.ranked === false) { showMessage("모드 기록은 학교 점수로 들어가요! (개인 랭킹은 일반 모드)"); const b = document.getElementById("submitScoreBtn"); if (b) b.disabled = true; return true; }
   if (data.enteredHof) {
     showMessage("명예의 전당에 등극했습니다! 🏆");
   } else {

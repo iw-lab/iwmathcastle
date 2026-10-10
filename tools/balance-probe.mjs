@@ -11,6 +11,8 @@ import * as sim from "../simCore.js";
 import { TOWER_STATS, MONSTER_STATS, WIZARD_SPELLS, WIZARD_AUTO_ATTACK_STATS } from "../gameData.js";
 
 const GATE_MODE = process.argv.includes("--gate");
+// v11: --mode=bossrush|blitz|chaos — 게임 모드도 같은 시뮬로 잰다(simCore 의 모드 규칙을 그대로)
+const PROBE_MODE = (process.argv.find((a) => a.startsWith("--mode=")) || "--mode=normal").slice(7);
 // v8: 집중력(정답률→화력)과 각성 6단계 도입으로 상위권 도달 웨이브가 올라갔다.
 // "학습이 결과를 바꾸는가"의 정본 게이트는 tools/accuracy-sweep.mjs 다.
 // 여기서는 "하드월 없음 + 무한 압도 없음" 두 가지만 본다.
@@ -88,7 +90,11 @@ function runCell(grade, accuracy, seed) {
   const avgRange = () =>
     towers.length ? towers.reduce((s, t) => s + t.range, 0) / towers.length : 100;
 
-  for (let wave = 1; wave <= MAX_WAVE; wave++) {
+  if (PROBE_MODE === "bossrush") gold += sim.GAME_MODES.bossrush.startGold;
+  let prevWave = null;
+  for (let wave = sim.startWaveForMode(PROBE_MODE); wave <= MAX_WAVE; wave = sim.nextWaveForMode(PROBE_MODE, wave)) {
+    if (PROBE_MODE === "bossrush" && prevWave !== null) { const g = sim.bossrushSkipGold(prevWave, wave); gold += g; cumIncome += g; }
+    prevWave = wave;
     // --- ① 문제 풀이 (웨이브 시작 전) ---
     if (rng() < accuracy) {
       combo++;
@@ -157,10 +163,10 @@ function runCell(grade, accuracy, seed) {
 
     // --- ③ 웨이브 전투 시뮬 (dt=0.1s 큐) ---
     const comp = sim.buildWaveComposition(wave, rng);
-    const mod = sim.waveModifier(wave, rng); // v6: 웨이브 변이
+    const mod = sim.modeWaveModifier(PROBE_MODE, wave, rng); // v6: 웨이브 변이 · v11 모드
     const hpMult = sim.waveHpMultiplier(wave) * sim.difficultyHpMultiplier(grade);
     const goldMult = sim.waveGoldMultiplier(wave) * (mod?.goldFactor || 1);
-    const spawnGap = sim.spawnIntervalMs(wave) / 1000;
+    const spawnGap = sim.spawnIntervalForMode(PROBE_MODE, wave) / 1000;
     const modSpeed = mod?.speedFactor || 1;
     const queue = comp.map((type, i) => {
       const st = MONSTER_STATS[type] || MONSTER_STATS.normal;

@@ -30,16 +30,25 @@
         <!-- ===== 메인 메뉴 ===== -->
         <div id="difficultyModal">
             <canvas id="menuParticleCanvas"></canvas>
-            <div class="menu-container">
-                <div class="menu-logo">
-                    <span class="logo-castle">🏰</span>
-                    <h1 class="brand-title">INsuworlD</h1>
-                    <h2 class="main-title">수학 성 수호자</h2>
-                    <p class="main-subtitle">MATH CASTLE GUARDIAN</p>
-                    <div class="version-badge">V6.0</div>
+            <div class="menu-container menu-v11">
+                <!-- v11(2026-10-10 「첫 UI도 직관적이고 세련되게」): 대표 그림 배너 + ① 모드 → ② 학년(누르면 시작) 두 단계 + 옆 카드 -->
+                <header class="menu-hero">
+                    <img class="hero-art" src="assets/menu-hero.webp" alt="" width="1200" height="462">
+                    <div class="hero-text">
+                        <h1 class="brand-title">INsuworlD</h1>
+                        <h2 class="main-title">수학 성 수호자</h2>
+                        <p class="hero-tag">문제를 풀어 마법으로 성을 지켜요!</p>
+                    </div>
+                    <div class="version-badge">V11</div>
+                </header>
+                <div class="menu-grid">
+                <section class="menu-main">
+                <div class="mode-section">
+                    <h3 class="section-label step-label"><span class="step-no">1</span> 모드 고르기</h3>
+                    <div class="mode-options" id="modeOptions" role="radiogroup" aria-label="게임 모드"></div>
                 </div>
                 <div class="difficulty-section">
-                    <h3 class="section-label">학년·학기를 선택하세요</h3>
+                    <h3 class="section-label step-label"><span class="step-no">2</span> 학년·학기를 누르면 바로 시작!</h3>
                     <div class="difficulty-options">
                         <button class="difficulty-btn" data-difficulty="3-1">
                             <span class="diff-grade diff-sem">3-1</span>
@@ -75,6 +84,36 @@
                         </button>
                     </div>
                 </div>
+                <div class="menu-actions">
+                    <button class="menu-btn" id="showReportBtn">
+                        <span class="btn-icon">📊</span> 학습 기록
+                    </button>
+                    <button class="menu-btn" id="loadGameBtn" disabled>
+                        <span class="btn-icon">💾</span> 이어하기
+                    </button>
+                    <button class="menu-btn" id="showRankingBtn" disabled>
+                        <span class="btn-icon">🏆</span> 랭킹 보기
+                    </button>
+                    <button class="menu-btn" id="showAchievementsBtn">
+                        <span class="btn-icon">🎖️</span> 업적
+                    </button>
+                    <button class="menu-btn" id="howToPlayBtn">
+                        <span class="btn-icon">❓</span> 게임 방법
+                    </button>
+                    <button class="menu-btn" id="settingsBtn">
+                        <span class="btn-icon">⚙️</span> 설정
+                    </button>
+                </div>
+                </section>
+                <aside class="menu-side">
+                <!-- v11: 학교 대항전 — NEIS 공식 목록에서 고르기만, 학교 합계만 보인다 -->
+                <div class="school-panel" id="schoolPanel">
+                    <div class="school-head">
+                        <span class="school-title">🏫 학교 대항전 <small>이번 주</small></span>
+                        <button class="rank-more" id="schoolPickBtn" type="button">우리 학교 고르기</button>
+                    </div>
+                    <div id="schoolBody"></div>
+                </div>
                 <!-- v8: 오늘의 도전 — 코드에는 이미 "오늘의 시드"(전국 공통 웨이브 조성)가
                      있었지만 화면에 한 글자도 안 나와서 아무도 몰랐다.
                      못 온 날을 벌하는 장치는 넣지 않는다(연속 압박 없음). -->
@@ -97,29 +136,11 @@
                     <ol class="rank-list" id="rankPanelList"></ol>
                     <p class="rank-note" id="rankPanelNote">불러오는 중…</p>
                 </div>
-                <div class="menu-actions">
-                    <button class="menu-btn" id="showReportBtn">
-                        <span class="btn-icon">📊</span> 학습 기록
-                    </button>
-                    <button class="menu-btn" id="loadGameBtn" disabled>
-                        <span class="btn-icon">💾</span> 이어하기
-                    </button>
-                    <button class="menu-btn" id="showRankingBtn" disabled>
-                        <span class="btn-icon">🏆</span> 랭킹 보기
-                    </button>
-                    <button class="menu-btn" id="showAchievementsBtn">
-                        <span class="btn-icon">🎖️</span> 업적
-                    </button>
-                    <button class="menu-btn" id="howToPlayBtn">
-                        <span class="btn-icon">❓</span> 게임 방법
-                    </button>
-                    <button class="menu-btn" id="settingsBtn">
-                        <span class="btn-icon">⚙️</span> 설정
-                    </button>
+                </aside>
                 </div>
                 <!-- v7: 개인정보 미수집 고지 (불특정 다수 초등학생 공개 대비) -->
                 <p class="menu-privacy">
-                    이 게임은 이름·나이·학교 등 개인정보를 수집하지 않아요.
+                    이 게임은 이름·나이 등 개인정보를 수집하지 않아요. 학교 대항전은 고른 학교의 합계 점수만 저장해요(누가 몇 점인지는 저장하지 않아요).
                     <a href="privacy.html" target="_blank" rel="noopener">자세히</a>
                 </p>
             </div>
@@ -327,6 +348,20 @@
         </div>
 
         <!-- ===== 랭킹 모달 ===== -->
+        <!-- v11: 학교 고르기 — 공식 목록(NEIS) 검색 결과에서 «누르기만» 한다(학교 이름을 직접 써서 저장하지 않는다) -->
+        <div class="modal" id="schoolModal" role="dialog" aria-modal="true" aria-labelledby="schoolModalTitle">
+            <div class="modal-content school-modal">
+                <h2 class="modal-title" id="schoolModalTitle">🏫 우리 학교 고르기</h2>
+                <div class="school-search">
+                    <select id="schoolSido" aria-label="지역"></select>
+                    <input id="schoolQuery" type="search" maxlength="12" placeholder="학교 이름 (예: 한빛)" autocomplete="off" aria-label="학교 이름">
+                    <button class="modal-btn primary" id="schoolSearchBtn" type="button">찾기</button>
+                </div>
+                <p class="school-msg" id="schoolMsg"></p>
+                <div class="school-results" id="schoolResults"></div>
+                <button class="modal-btn" id="schoolCloseBtn" type="button">닫기</button>
+            </div>
+        </div>
         <div class="modal" id="rankingModal">
             <div class="modal-content ranking-modal">
                 <h2 class="modal-title">🏆 랭킹</h2>
