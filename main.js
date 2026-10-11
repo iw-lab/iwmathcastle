@@ -2480,6 +2480,7 @@ function updateActionHint() {
   if (!el) return;
   let text = "";
   let build = false;
+  let ready = false;
   if (!gameRunning || gamePaused) {
     text = "";
   } else if (buildStep !== "idle") {
@@ -2488,14 +2489,18 @@ function updateActionHint() {
       : "🏗️ 타워를 고르세요 — <kbd>←→↑↓</kbd> 이동 · <kbd>Enter</kbd> 건설 · <kbd>1</kbd>~<kbd>9</kbd> 바로 · <kbd>Esc</kbd> 취소";
     build = true;
   } else if (focusedTile) {
+    // 웨이브 사이엔 건설 안내 뒤에 «준비 다 됐으면 시작»을 붙여 둔다(사라지지 않음)
+    ready = !waveInProgress;
     text = isTouchLike
-      ? "🏗️ 여기에 지으려면 건설 단추 · 빛나는 칸을 탭해도 돼요"
-      : "🏗️ <kbd>E</kbd> 여기에 타워 건설 · <kbd>Space</kbd> 마법 공격";
+      ? (ready ? "🏗️ 건설 단추로 타워 · 준비 다 됐으면 <b>🚀 시작</b>!" : "🏗️ 여기에 지으려면 건설 단추 · 빛나는 칸을 탭해도 돼요")
+      : "🏗️ <kbd>E</kbd> 여기에 타워 건설 · <kbd>Space</kbd> 마법 공격" + (ready ? " · 준비 다 됐으면 <b>🚀 시작</b>(<kbd>Enter</kbd>)" : "");
     build = true;
   } else if (!waveInProgress) {
+    // 2026-10-11 «준비 다 됐음 시작버튼 누르라고 하고 시작버튼 강조도» — 웨이브 사이 안내는 사라지지 않는다(아래 stale 제외)
     text = isTouchLike
-      ? "🚀 시작 버튼을 누르면 웨이브가 시작돼요"
-      : "<kbd>Enter</kbd> 웨이브 시작 · <kbd>WASD</kbd> 이동 · 빛나는 타일에서 <kbd>E</kbd> 건설";
+      ? "✅ 준비가 다 됐으면 <b>🚀 시작</b> 버튼을 눌러요!"
+      : "✅ 준비가 다 됐으면 <b>🚀 시작</b>(<kbd>Enter</kbd>) · <kbd>WASD</kbd> 이동 · 빛나는 타일에서 <kbd>E</kbd> 건설";
+    ready = true;
   } else {
     text = isTouchLike
       ? "🕹️ 조이스틱으로 이동 · 공격 단추로 마법"
@@ -2508,7 +2513,10 @@ function updateActionHint() {
   }
   // 폰(2026-10-10 «안내문구가 타워 다 가림»): 길·타워가 화면을 꽉 채워 어디에 둬도 무언가를 가린다 →
   //   안내는 위쪽 띠에 반투명으로, 같은 문구는 HINT_TOUCH_MS 뒤 사라진다(문구가 바뀌면 다시 뜬다). 건설 선택 중 안내는 유지
-  const stale = isTouchLike && buildStep === "idle" && performance.now() - actionHintAt > HINT_TOUCH_MS;
+  const stale = isTouchLike && !ready && buildStep === "idle" && performance.now() - actionHintAt > HINT_TOUCH_MS;
+  // 시작 버튼 강조 — 웨이브 사이(누를 수 있을 때)만. 타일 위에 서 있어 안내가 건설 문구여도 버튼은 계속 깜빡인다
+  const sb = gameElements.startWaveBtn;
+  if (sb) sb.classList.toggle("cta-ready", !!(gameRunning && !gamePaused && !waveInProgress && !sb.disabled));
   el.classList.toggle("show", !!text && !stale);
   el.classList.toggle("hint-build", build);
 }

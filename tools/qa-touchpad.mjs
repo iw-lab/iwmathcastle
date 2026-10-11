@@ -22,6 +22,10 @@ try {
   ok(box.stick?.width > 60 && box.atk?.width > 50, `조작부가 보인다(조이스틱 ${Math.round(box.stick?.width)}px · 공격 ${Math.round(box.atk?.width)}px)`);
   ok(box.stick && box.bar && box.stick.bottom <= box.bar.top && box.atk.bottom <= box.bar.top, `하단 바를 안 가린다(조이스틱 아래 ${Math.round(box.stick?.bottom)} · 바 위 ${Math.round(box.bar?.top)})`);
   const st = () => page.evaluate(() => window.__mathcastle.getState());
+  // 웨이브 전: «준비 다 됐으면 시작» 안내 + 시작 버튼 강조(2026-10-11) — 안내는 사라지지 않는다
+  const cta = () => page.evaluate(() => { const b = document.getElementById("startWaveBtn"), h = document.getElementById("action-hint"); return { pulse: b.classList.contains("cta-ready") && (getComputedStyle(b).animationName === "ctaPulse" || getComputedStyle(b).boxShadow !== "none"), hint: h.classList.contains("show") ? h.textContent : "" }; });
+  const c0 = await cta(); await sl(4200); const c1 = await cta();
+  ok(c0.pulse && c1.pulse && /시작/.test(c1.hint), `웨이브 전 시작 버튼 강조·«준비 다 됐으면 시작» 안내가 계속 보인다(${JSON.stringify(c1)})`);
   const x0 = (await st()).wizard.x;
   const cx = box.stick.x + box.stick.width / 2, cy = box.stick.y + box.stick.height / 2;
   const cdp = await page.target().createCDPSession();
@@ -41,8 +45,10 @@ try {
   const msgs2 = await page.evaluate(() => window.__msgs); ok(!msgs2.some((t) => t.includes("쿨타임")), `건설을 눌러도 «쿨타임» 안내가 안 뜬다(${JSON.stringify(msgs2)})`);
   ok(JSON.stringify(s2.spellCooldowns) === JSON.stringify(s1.spellCooldowns) && s2.projectiles <= s1.projectiles, "건설 단추가 마법을 같이 쏘지 않는다");
   ok(s2.buildStep !== "idle" || sel, `건설 단추 → 건설 단계(${s2.buildStep} · 선택창 ${sel})`);
-  // 안내문구(«타워 다 가림» 2026-10-10): 폰에선 위쪽 띠 · 같은 문구는 몇 초 뒤 사라진다
+  // 안내문구(«타워 다 가림» 2026-10-10): 폰에선 위쪽 띠 · 웨이브 중 같은 문구는 몇 초 뒤 사라진다(웨이브 사이 «시작» 안내는 남는다)
   await page.keyboard.press("Escape"); await sl(300);   // 선택창 닫기
+  await page.tap("#startWaveBtn"); await sl(800);
+  ok(!(await cta()).pulse, "시작을 누르면 강조가 꺼진다(웨이브 중)");
   const hint = async () => page.evaluate(() => { const e = document.getElementById("action-hint"); const r = e.getBoundingClientRect(); return { show: e.classList.contains("show") && +getComputedStyle(e).opacity > 0.1, top: Math.round(r.top), bottom: Math.round(r.bottom), text: e.textContent }; });
   const h0 = await hint();
   ok(h0.bottom < 412 * 0.3, `폰 안내문구는 위쪽 띠(${h0.top}~${h0.bottom}px · «${h0.text}»)`);
