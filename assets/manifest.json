@@ -2747,6 +2747,10 @@
   {
    "key": "tower_meteor_atk_7",
    "file": "tower-meteor-atk-7.webp"
+  },
+  {
+   "key": "tile_pedestal",
+   "file": "tile-pedestal.webp"
   }
  ]
 }

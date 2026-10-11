@@ -25,7 +25,7 @@ import * as problemSelector from "./problemSelector.js";
 import * as dailyQuest from "./dailyQuest.js";
 import { unitName, unitsOf } from "./problems/units.js";
 import * as stageProgress from "./stageProgress.js";
-import { preloadSprites, getSprite } from "./spriteAssets.js";
+import { preloadSprites, getSprite, drawSpriteCentered } from "./spriteAssets.js";
 import {
   debounce,
   showMessage,
@@ -1100,6 +1100,8 @@ window.addEventListener("DOMContentLoaded", () => {
       roads: roadRowYs.map((y) => Math.round(y)),
       roadWidth: Math.round(50 * worldScale()),
     }),
+    qaPedestals: () => { const g = pedestalGeom(); return { drawn: pedestalDrawn, empty: tileIndex.filter((t) => t.el.style.display !== "none").length, geom: g, roadHalf: roadVisualWidth() / 2,
+      boxes: tileIndex.map((t) => ({ l: t.cx - g.pedW / 2, r: t.cx + g.pedW / 2, t: t.cy + g.dy - g.pedH / 2, b: t.cy + g.dy + g.pedH / 2, tileB: t.cy + TILE_SIZE / 2 })) }; },
     qaPathPoints: () => pathPoints.map((p) => ({ x: p.x, y: p.y })),
     qaTowers: () => towers.map((t) => ({ x: t.x, y: t.y, type: t.type })),
     qaFiredTowers: () => towers.filter((t) => t.firedAt || t.fireAnim).map((t) => t.type),
@@ -1351,7 +1353,10 @@ async function initializeGame(difficulty, savedState = null) {
     // #gameCanvas 자체의 불투명 CSS 배경을 인라인으로 교체해야 보인다
     // (#game-content에 걸면 자식 gameCanvas 배경에 완전히 가려짐 — 시각 QA 실측)
     if (bgImg && gameElements.gameCanvas) {
-      gameElements.gameCanvas.style.background = `linear-gradient(rgba(8,10,30,0.5), rgba(8,10,30,0.5)), url(${bgImg.src}) center / cover no-repeat`;
+      // 3D 디오라마 배경(2026-10-11 «맵도 더 3d스럽게») — 옛 밤 배경 위 50% 덮개는 화면을 밤하늘로 만들어 타워가 허공에 떠 보였다.
+      //   덮개는 테마별로 «길·타워가 배경보다 앞에 읽히는» 만큼만(밝은 풀밭은 조금, 어두운 화산은 없이). 판정 = tools/qa-map3d.mjs
+      const veil = { bg_meadow: 0.22, bg_canyon: 0.15, bg_volcano: 0 }[bgKey] ?? 0.2;
+      gameElements.gameCanvas.style.background = `linear-gradient(rgba(8,10,30,${veil}), rgba(8,10,30,${veil})), url(${bgImg.src}) center / cover no-repeat`;
     }
   }
   } catch (err) {
@@ -1682,6 +1687,8 @@ function regenerateLayout() {
 // 남아 아래 줄이 컨트롤 바 밑에 숨었다. 이벤트를 믿지 않고 렌더 루프가 1초마다 화면·바 위치를 재서
 // 마지막으로 깐 레이아웃과 다르면 다시 깐다. 시험 = tools/qa-layout-heal.mjs(이벤트를 삼켜 재현).
 let layoutKey = "";
+let pedestalDrawn = 0; // QA: 마지막으로 구운 받침대 층의 빈 자리 받침대 수
+let pedLayer = null, pedLayerSig = "";
 let layoutCheckAt = 0;
 function currentLayoutKey() {
   const pf = playfieldBounds();
@@ -1929,11 +1936,30 @@ function drawRoad(corners, w) {
   // 테두리가 더 두꺼워져 길 세 줄이 글로우로 이어 붙어 한 덩어리로 보인다.
   const ws = worldScale();
   const rim = Math.round(18 * ws);
-  // 1) 바깥 마법 글로우 테두리 (정적이라 shadowBlur 1회 허용)
+  // 1) 입체 돌길(2026-10-11 «맵도 더 3d스럽게») — 예전 보라 글로우 테두리는 평면 띠로 읽혔다.
+  //    땅에 드리운 그림자(아래로 밀어 흐리게) → 연석 옆면(어둡게, 아래로) → 연석 윗면 → 이음매 → 윗모서리 빛.
+  //    빛은 위에서 오므로 그림자·옆면은 늘 아래쪽으로만 비친다. 정적 레이어라 shadowBlur 1회 허용.
   ctx.save();
-  ctx.shadowColor = "rgba(130,100,220,0.5)";
-  ctx.shadowBlur = Math.round(20 * ws);
-  traceStroke(w + rim, "#20172c");
+  ctx.translate(0, Math.round(6 * ws));
+  ctx.shadowColor = "rgba(0,0,0,0.7)";
+  ctx.shadowBlur = Math.round(12 * ws);
+  ctx.globalAlpha = 0.55;
+  traceStroke(w + rim + Math.round(4 * ws), "#000");
+  ctx.restore();
+  ctx.save();
+  ctx.translate(0, Math.round(4 * ws));
+  traceStroke(w + rim, "#34303a");
+  ctx.restore();
+  traceStroke(w + rim, "#7d7787");
+  ctx.save();
+  ctx.lineCap = "butt";
+  ctx.setLineDash([Math.max(1.5, 2 * ws), Math.round(15 * ws)]);
+  traceStroke(w + rim, "rgba(38,34,44,0.75)");
+  ctx.restore();
+  ctx.save();
+  ctx.translate(0, -Math.round(2 * ws));
+  ctx.globalAlpha = 0.4;
+  traceStroke(w + rim - Math.round(7 * ws), "#d6cfe0");
   ctx.restore();
   // 2) 어두운 흙 가장자리(파인 느낌) → 3) 본 노면 → 4) 밝은 중앙 트랙
   traceStroke(w + Math.round(8 * ws), "#33291e");
@@ -2579,6 +2605,20 @@ function openTowerSelectorForTile(tile) {
  * (줄이면 놓을 자리는 늘지만 아이들이 못 누른다 — 대신 길 폭·여백을 줄인다.)
  */
 const TILE_SIZE = 40;
+
+/**
+ * 돌 받침대 자리(2026-10-11 «맵도 더 3d스럽게») — 빈 타워 자리와 지은 타워 발밑이 같은 그림·같은 상자를 쓴다(둘 다 캔버스).
+ * 타일 중심 기준: 받침대 상자(정사각 pedW, 그림은 contain)의 중심 = +dy, 타워가 딛는 곳 = +groundY(받침대 윗면 앞쪽).
+ * 타일 자체(터치 타깃 40px)는 그대로 두고 그림만 화면 축척을 따른다(0.75 아래로는 안 줄인다 — 돌 무늬가 뭉개진다).
+ */
+function pedestalGeom() {
+  const pedW = Math.round(TILE_SIZE * Math.max(0.75, worldScale()));
+  const pedH = pedW * 0.66; // 원판 그림 가로:세로(128×84)
+  // ⚠️ 받침대 그림은 칸(TILE_SIZE) 안에서 끝나야 한다 — 칸은 길에서 떨어지게 깔리지만(pathBuffer), 그림을 아래로 더 내리면
+  //    길 바로 윗줄 받침대가 연석을 밟아 «타워가 길 위에 선» 것처럼 보였다(2026-10-11 사용자 «타워 위치가 길위로 오는건 아니지?»).
+  const dy = Math.min(Math.round(pedW * 0.25), Math.floor(TILE_SIZE / 2 - pedH / 2 - 1));
+  return { pedW, pedH, dy, groundY: Math.round(dy - pedH * 0.05) };
+}
 
 /**
  * 실제로 플레이할 수 있는 세로 구간 (상단 info-bar 아래 ~ 하단 control-bar 위).
@@ -3349,11 +3389,37 @@ function renderDynamicLayer() {
   // [V3] 타워 캔버스 렌더링
   // 한 타워의 렌더 실패가 뒤따르는 몬스터·이펙트 그리기를 통째로 삼키지 않도록 격리한다.
   const towerScale = worldScale();
+  const ped = pedestalGeom();
+  // 빈 타워 자리 받침대 — 타워보다 먼저 캔버스에 깐다. DOM(타일 ::before)으로 그리면 타일이 캔버스 위라
+  //   키 큰 타워(초월 수호자 날개)를 윗줄 받침대가 덮었다(2026-10-11 실화면). 비어 있으면 반투명, 마법사가 선 칸은 또렷이.
+  //   PC 는 빈 칸이 180개라 매 프레임 180번 그리면 저사양(웨일북)에 얹힌다 → 한 장으로 구워 두고
+  //   칸 상태(타워 섬·포커스·레이아웃)가 바뀔 때만 다시 굽는다. 평소엔 drawImage 1번.
+  if (getSprite("tile_pedestal")) {
+    let sig = layoutKey + "|" + DPR + "|";
+    for (const t of tileIndex) sig += t.el.style.display === "none" ? "0" : t.el.classList.contains("tile-focus") ? "2" : "1";
+    if (sig !== pedLayerSig) {
+      pedLayerSig = sig;
+      if (!pedLayer) pedLayer = document.createElement("canvas");
+      sizeCanvas(pedLayer);
+      const c = pedLayer.getContext("2d");
+      c.setTransform(DPR, 0, 0, DPR, 0, 0);
+      c.clearRect(0, 0, pedLayer.width, pedLayer.height);
+      pedestalDrawn = 0;
+      for (const t of tileIndex) {
+        if (t.el.style.display === "none") continue; // 타워가 선 칸 — 아래 타워 루프가 그린다
+        c.globalAlpha = t.el.classList.contains("tile-focus") ? 1 : 0.38;
+        drawSpriteCentered(c, "tile_pedestal", t.cx, t.cy + ped.dy, ped.pedW);
+        pedestalDrawn++;
+      }
+    }
+    dynamicCtx.drawImage(pedLayer, 0, 0, pedLayer.width / DPR, pedLayer.height / DPR);
+  }
   for (const t of towers) {
     try {
       // v9: 등급 링을 **타워보다 먼저** 그린다(발밑 고리). 위에 그리면 타워 그림을 가린다.
+      drawSpriteCentered(dynamicCtx, "tile_pedestal", Math.round(t.x), Math.round(t.y) + ped.dy, ped.pedW);
       drawRarityRing(dynamicCtx, t, towerScale);
-      towerRenderer.render(dynamicCtx, t.type, t.x, t.y, t.level, now, towerScale, t);
+      towerRenderer.render(dynamicCtx, t.type, t.x, t.y, t.level, now, towerScale, t, getSprite("tile_pedestal") ? ped.groundY : null);
     } catch (e) {
       dynamicCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
       logRenderFailure(`tower:${t.type}`, e);

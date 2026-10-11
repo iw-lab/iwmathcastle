@@ -221,12 +221,15 @@ export class TowerRenderer {
    *   ⚠️ ctx.scale은 쓰지 않는다(비정수 스케일이 비트맵 fast path를 깨서
    *      저사양에서 30fps로 반락한 실측이 있다). drawImage 대상 크기만 조절한다.
    */
-  render(ctx, towerType, x, y, level, timestamp, scale = 1, tower = null) {
+  // groundY(선택): 받침대 위에 세울 때 타워 그림 바닥이 닿을 y(타일 중심 기준). 없으면 예전 자리(바닥 ≈ +25·배율).
+  render(ctx, towerType, x, y, level, timestamp, scale = 1, tower = null, groundY = null) {
     ctx.save();
     ctx.translate(Math.round(x), Math.round(y));
 
-    // Shadow beneath tower (cheap, always drawn live)
-    this._drawShadow(ctx);
+    // Shadow beneath tower (cheap, always drawn live) — 받침대가 있으면 받침대 그림이 땅 그림자를 대신한다
+    const T = TIER_SCALE[towerType] || 1;
+    if (groundY == null) this._drawShadow(ctx);
+    else this._drawContactShadow(ctx, groundY, scale * T);
 
     // Level rings are animated, draw live
     if (level > 0) {
@@ -249,8 +252,9 @@ export class TowerRenderer {
         ctx,
         key,
         0,
-        -14 * scale * (TIER_SCALE[towerType] || 1),
-        78 * scale * (TIER_SCALE[towerType] || 1),
+        // 리그 렌더는 그림을 실루엣 상자로 잘라 둬서 바닥 = 중심 + 상자/2(세로로 긴 탑 기준)
+        groundY == null ? -14 * scale * T : groundY - 39 * scale * T,
+        78 * scale * T,
       )
     ) {
       // Draw cached static tower body, or build cache on first call
@@ -272,7 +276,8 @@ export class TowerRenderer {
     // 3D 리그 타워는 옛 2D 그림에 맞춰 그리던 장식(포신·톱날·과녁)이 엇나가 겹친다 → 등급 빛가루만(2026-10-11 실화면)
     if (key !== base) {
       const g = AURA[towerType];
-      if (g) this._drawParticles(ctx, timestamp, 0, -18 * scale * (TIER_SCALE[towerType] || 1), g[0], g[1] * scale, g[2], g[3]);
+      const lift = groundY == null ? 0 : groundY - 39 * scale * T + 14 * scale * T; // 받침대 위로 올라선 만큼 빛가루도 따라 올린다
+      if (g) this._drawParticles(ctx, timestamp, 0, -18 * scale * T + lift, g[0], g[1] * scale, g[2], g[3]);
     } else this._drawAnimatedOverlays(ctx, towerType, timestamp, level);
 
     ctx.restore();
@@ -1300,6 +1305,16 @@ export class TowerRenderer {
   // ---------------------------------------------------------------------------
   // Common elements
   // ---------------------------------------------------------------------------
+
+  /** 받침대 윗면에 닿는 발밑 접지 그림자 — 탑이 받침대 위에 «서 있게» 한다(떠 보이지 않게) */
+  _drawContactShadow(ctx, gy, s) {
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,0.28)";
+    ctx.beginPath();
+    ctx.ellipse(0, gy - 1, 15 * s, 4.5 * s, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 
   _drawShadow(ctx) {
     ctx.fillStyle = SHADOW;
