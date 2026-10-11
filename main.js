@@ -1101,6 +1101,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }),
     qaPathPoints: () => pathPoints.map((p) => ({ x: p.x, y: p.y })),
     qaTowers: () => towers.map((t) => ({ x: t.x, y: t.y, type: t.type })),
+    qaFiredTowers: () => towers.filter((t) => t.firedAt || t.fireAnim).map((t) => t.type),
     qaTimeLimit: (p) => problemTimeLimit(p), // v6: 유형별 제한시간 검증용
     qaWaveModifier: (w) => simCore.waveModifier(w, seededRand(dailySeedForWave(w))),
     qaForceGameOver: () => { castleHealth = 0; checkGameOver(); },
@@ -2346,8 +2347,7 @@ function installTouchPad() {
   const place = () => {
     const bar = document.getElementById("control-bar")?.getBoundingClientRect();
     pad.style.setProperty("--tp-bottom", `${Math.max(8, Math.round(bar && bar.height ? window.innerHeight - bar.top + 8 : 72))}px`);
-    const top = document.getElementById("info-bar")?.getBoundingClientRect();
-    document.documentElement.style.setProperty("--hint-top", `${Math.round(top && top.height ? top.bottom + 6 : 56)}px`);
+
   };
   place(); window.addEventListener("resize", place); setTimeout(place, 800);
   const R = 44, DEAD = 8;
@@ -2513,7 +2513,7 @@ function updateActionHint() {
   }
   // 폰(2026-10-10 «안내문구가 타워 다 가림»): 길·타워가 화면을 꽉 채워 어디에 둬도 무언가를 가린다 →
   //   안내는 위쪽 띠에 반투명으로, 같은 문구는 HINT_TOUCH_MS 뒤 사라진다(문구가 바뀌면 다시 뜬다). 건설 선택 중 안내는 유지
-  const stale = isTouchLike && !ready && buildStep === "idle" && performance.now() - actionHintAt > HINT_TOUCH_MS;
+  const stale = !ready && buildStep === "idle" && performance.now() - actionHintAt > (isTouchLike ? HINT_TOUCH_MS : HINT_TOUCH_MS * 2);
   // 시작 버튼 강조 — 웨이브 사이(누를 수 있을 때)만. 타일 위에 서 있어 안내가 건설 문구여도 버튼은 계속 깜빡인다
   const sb = gameElements.startWaveBtn;
   if (sb) sb.classList.toggle("cta-ready", !!(gameRunning && !gamePaused && !waveInProgress && !sb.disabled));
@@ -2815,6 +2815,7 @@ function updateTowers(timestamp, deltaTime) {
       if (timestamp >= (tower.cooldownUntil || 0)) {
         tower.cooldownUntil = timestamp + tower.cooldown;
         if (getDistanceSq(tower, castleCoords) < tower.rangeSq) {
+          tower.fireAnim = true;   // 수리 팔 휘두르기(attack 모션) — 시각 찍기는 렌더러가(게임 로직엔 벽시계 금지 · qa-ux-controls)
           castleHealth = Math.min(100, castleHealth + tower.repair.amount);
           sfx.play("powerup");
           createDamageText(
@@ -3327,7 +3328,7 @@ function renderDynamicLayer() {
     try {
       // v9: 등급 링을 **타워보다 먼저** 그린다(발밑 고리). 위에 그리면 타워 그림을 가린다.
       drawRarityRing(dynamicCtx, t, towerScale);
-      towerRenderer.render(dynamicCtx, t.type, t.x, t.y, t.level, now, towerScale);
+      towerRenderer.render(dynamicCtx, t.type, t.x, t.y, t.level, now, towerScale, t);
     } catch (e) {
       dynamicCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
       logRenderFailure(`tower:${t.type}`, e);
@@ -4083,6 +4084,9 @@ function deleteWeakestTower() {
 // --- 전투 및 상호작용 ---
 function createProjectile(source, target) {
   const type = source.type ? source.type : "wizard-auto";
+  // 타워 공격 모션(2026-10-11 «타워도 뼈대 입혀서 공격 모션») — 깃발만 세우고, 렌더러가 그 프레임 시각을 찍어 attack 8장을 튼다
+  //   (게임 로직에 벽시계를 두지 않는다 — 배속·일시정지 규칙, qa-ux-controls)
+  if (source.type) source.fireAnim = true;
 
   const projectile = {
     x: source.x,
@@ -5992,6 +5996,9 @@ function setupEventListeners() {
   });
 
   installTouchPad();
+  // 안내문구 위치(전 기기) — 상단 바 바로 밑
+  const placeHint = () => { const top = document.getElementById("info-bar")?.getBoundingClientRect(); document.documentElement.style.setProperty("--hint-top", `${Math.round(top && top.height ? top.bottom + 6 : 56)}px`); };
+  placeHint(); window.addEventListener("resize", placeHint); setTimeout(placeHint, 800);
   const rankingTabsContainer = document.querySelector(".ranking-tabs");
   if (rankingTabsContainer) {
     rankingTabsContainer.addEventListener("click", (event) => {

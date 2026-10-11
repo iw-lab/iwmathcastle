@@ -21,7 +21,7 @@ SCRIPTS=(
   qa-ux-controls qa-mobile qa-ime qa-wizard-flicker qa-audio qa-a11y-load
   qa-meteor-pause qa-restart-cooldown
   qa-rarity qa-impact qa-review-badge qa-pause-resume qa-blessing
-  qa-phone-layout qa-touchpad qa-text-wrap qa-bgm-theme
+  qa-phone-layout qa-touchpad qa-text-wrap qa-bgm-theme qa-tower-shot
   qa-perf
 )
 

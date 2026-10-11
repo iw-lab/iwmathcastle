@@ -1,5 +1,11 @@
 // towerRenderer.js - Canvas 2D Tower Renderer (Isometric / Pseudo-3D)
-import { drawSpriteCentered } from "./spriteAssets.js";
+import { drawSpriteCentered, getSprite } from "./spriteAssets.js";
+const ATK_MS = 420;
+// 등급이 크기로도 보이게(2026-10-11 «초월 수호자가 제일 좋은 타워로 보임?») — 4등급 금속 탑·5 궁극·6 초월은 한 칸 위로 솟는다
+const TIER_SCALE = { copper: 1.05, silver: 1.07, golden: 1.12, ultimate: 1.25, transcendent: 1.45 };   // 초월은 날개로 가로가 길어 «긴 변» 맞춤에서 작아 보였다
+// 3D 타워 빛가루 [개수, 반경, 색, 속도] — 등급이 높을수록 많고 넓게
+const AURA = { copper: [3, 18, "#F4A261", 0.001], silver: [4, 20, "#E0F2FF", 0.0012], golden: [6, 24, "#FFD700", 0.0014],
+  ultimate: [8, 28, "#C77DFF", 0.0016], transcendent: [12, 36, "#FFF3B0", 0.0018] };   // 공격 모션 길이 — 가장 빠른 타워 쿨다운(≈0.5초)보다 짧게
 import { quality } from "./perfQuality.js";
 // Pixel-art style sprites using canvas primitives (fillRect, arc, lineTo, bezierCurveTo)
 // Self-contained, no external dependencies
@@ -215,7 +221,7 @@ export class TowerRenderer {
    *   ⚠️ ctx.scale은 쓰지 않는다(비정수 스케일이 비트맵 fast path를 깨서
    *      저사양에서 30fps로 반락한 실측이 있다). drawImage 대상 크기만 조절한다.
    */
-  render(ctx, towerType, x, y, level, timestamp, scale = 1) {
+  render(ctx, towerType, x, y, level, timestamp, scale = 1, tower = null) {
     ctx.save();
     ctx.translate(Math.round(x), Math.round(y));
 
@@ -229,13 +235,22 @@ export class TowerRenderer {
 
     // v5: AI 스프라이트 우선 (미로드 시 절차 캐시 폴백)
     // manifest key는 파일명 규칙상 하이픈이 언더바(multi-shot → tower_multi_shot)라 정규화 필요
+    // v11.3(2026-10-11): 뼈대 리그 렌더(tools/rig-towers.py) — 쏜 직후 ATK_MS 동안 attack 8장, 평소엔 idle 8장(타워마다 위상 다르게)
+    const base = `tower_${towerType.replace(/-/g, "_")}`;
+    let key = base;
+    if (tower && tower.fireAnim) { tower.fireAnim = false; tower.firedAt = timestamp; }
+    if (getSprite(`${base}_idle_7`)) {
+      const dt = tower && tower.firedAt ? timestamp - tower.firedAt : Infinity;
+      if (dt >= 0 && dt < ATK_MS && getSprite(`${base}_atk_7`)) key = `${base}_atk_${Math.min(7, Math.floor((dt / ATK_MS) * 8))}`;
+      else key = `${base}_idle_${(Math.floor(timestamp / 140 + (tower ? (tower.x * 7 + tower.y * 3) % 8 : 0)) % 8 + 8) % 8}`;
+    }
     if (
       !drawSpriteCentered(
         ctx,
-        `tower_${towerType.replace(/-/g, "_")}`,
+        key,
         0,
-        -14 * scale,
-        78 * scale,
+        -14 * scale * (TIER_SCALE[towerType] || 1),
+        78 * scale * (TIER_SCALE[towerType] || 1),
       )
     ) {
       // Draw cached static tower body, or build cache on first call
@@ -254,7 +269,11 @@ export class TowerRenderer {
     }
 
     // Draw animated overlays on top (glows, particles, rotating elements)
-    this._drawAnimatedOverlays(ctx, towerType, timestamp, level);
+    // 3D 리그 타워는 옛 2D 그림에 맞춰 그리던 장식(포신·톱날·과녁)이 엇나가 겹친다 → 등급 빛가루만(2026-10-11 실화면)
+    if (key !== base) {
+      const g = AURA[towerType];
+      if (g) this._drawParticles(ctx, timestamp, 0, -18 * scale * (TIER_SCALE[towerType] || 1), g[0], g[1] * scale, g[2], g[3]);
+    } else this._drawAnimatedOverlays(ctx, towerType, timestamp, level);
 
     ctx.restore();
   }

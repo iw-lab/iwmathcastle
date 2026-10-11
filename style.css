@@ -4340,8 +4340,8 @@ body.is-touch .touch-pad { display: block; position: absolute; inset: 0; pointer
 .tp-btn:active { transform: translateY(2px) scale(0.96); }
 @media (max-height: 380px) { .tp-stick { width: 96px; height: 96px; } .tp-btn.atk { width: 70px; height: 70px; } .tp-btn.build { width: 56px; height: 56px; font-size: 22px; } }
 
-/* 폰·태블릿(터치): 안내는 위쪽 띠에 반투명·손 안 막음 — 아래쪽에 두면 길·타워를 덮었다(2026-10-10 실기 제보) */
-body.is-touch .action-hint {
+/* 안내는 위쪽 띠에 반투명·손 안 막음 — 아래쪽에 두면 길·타워를 덮었다(2026-10-10 폰 실기 제보 · 2026-10-11 PC 화면도 금탑을 덮어 전 기기로) */
+body .action-hint {
     top: var(--hint-top, 56px);
     bottom: auto;
     font-size: 12px;
@@ -4349,7 +4349,7 @@ body.is-touch .action-hint {
     background: rgba(10, 14, 30, 0.55);
     pointer-events: none;
 }
-body.is-touch .action-hint.show { opacity: 0.92; }
+body .action-hint.show { opacity: 0.92; }
 
 /* 폰 가로 첫 화면 글자 세로 쌓임(2026-10-10 실기 «글씨 세로나열 심함», tools/qa-text-wrap.mjs):
    ① 학년 단추 «3-2» — .diff-grade.diff-sem(26px)이 좁은 칸 규칙(18px)보다 구체적이라 이겨서 «3-/2» 로 접혔다

@@ -1371,6 +1371,1382 @@
   {
    "key": "road_dirt",
    "file": "road-dirt.webp"
+  },
+  {
+   "key": "tower_plus_idle_0",
+   "file": "tower-plus-idle-0.webp"
+  },
+  {
+   "key": "tower_plus_idle_1",
+   "file": "tower-plus-idle-1.webp"
+  },
+  {
+   "key": "tower_plus_idle_2",
+   "file": "tower-plus-idle-2.webp"
+  },
+  {
+   "key": "tower_plus_idle_3",
+   "file": "tower-plus-idle-3.webp"
+  },
+  {
+   "key": "tower_plus_idle_4",
+   "file": "tower-plus-idle-4.webp"
+  },
+  {
+   "key": "tower_plus_idle_5",
+   "file": "tower-plus-idle-5.webp"
+  },
+  {
+   "key": "tower_plus_idle_6",
+   "file": "tower-plus-idle-6.webp"
+  },
+  {
+   "key": "tower_plus_idle_7",
+   "file": "tower-plus-idle-7.webp"
+  },
+  {
+   "key": "tower_plus_atk_0",
+   "file": "tower-plus-atk-0.webp"
+  },
+  {
+   "key": "tower_plus_atk_1",
+   "file": "tower-plus-atk-1.webp"
+  },
+  {
+   "key": "tower_plus_atk_2",
+   "file": "tower-plus-atk-2.webp"
+  },
+  {
+   "key": "tower_plus_atk_3",
+   "file": "tower-plus-atk-3.webp"
+  },
+  {
+   "key": "tower_plus_atk_4",
+   "file": "tower-plus-atk-4.webp"
+  },
+  {
+   "key": "tower_plus_atk_5",
+   "file": "tower-plus-atk-5.webp"
+  },
+  {
+   "key": "tower_plus_atk_6",
+   "file": "tower-plus-atk-6.webp"
+  },
+  {
+   "key": "tower_plus_atk_7",
+   "file": "tower-plus-atk-7.webp"
+  },
+  {
+   "key": "tower_minus_idle_0",
+   "file": "tower-minus-idle-0.webp"
+  },
+  {
+   "key": "tower_minus_idle_1",
+   "file": "tower-minus-idle-1.webp"
+  },
+  {
+   "key": "tower_minus_idle_2",
+   "file": "tower-minus-idle-2.webp"
+  },
+  {
+   "key": "tower_minus_idle_3",
+   "file": "tower-minus-idle-3.webp"
+  },
+  {
+   "key": "tower_minus_idle_4",
+   "file": "tower-minus-idle-4.webp"
+  },
+  {
+   "key": "tower_minus_idle_5",
+   "file": "tower-minus-idle-5.webp"
+  },
+  {
+   "key": "tower_minus_idle_6",
+   "file": "tower-minus-idle-6.webp"
+  },
+  {
+   "key": "tower_minus_idle_7",
+   "file": "tower-minus-idle-7.webp"
+  },
+  {
+   "key": "tower_minus_atk_0",
+   "file": "tower-minus-atk-0.webp"
+  },
+  {
+   "key": "tower_minus_atk_1",
+   "file": "tower-minus-atk-1.webp"
+  },
+  {
+   "key": "tower_minus_atk_2",
+   "file": "tower-minus-atk-2.webp"
+  },
+  {
+   "key": "tower_minus_atk_3",
+   "file": "tower-minus-atk-3.webp"
+  },
+  {
+   "key": "tower_minus_atk_4",
+   "file": "tower-minus-atk-4.webp"
+  },
+  {
+   "key": "tower_minus_atk_5",
+   "file": "tower-minus-atk-5.webp"
+  },
+  {
+   "key": "tower_minus_atk_6",
+   "file": "tower-minus-atk-6.webp"
+  },
+  {
+   "key": "tower_minus_atk_7",
+   "file": "tower-minus-atk-7.webp"
+  },
+  {
+   "key": "tower_divide_idle_0",
+   "file": "tower-divide-idle-0.webp"
+  },
+  {
+   "key": "tower_divide_idle_1",
+   "file": "tower-divide-idle-1.webp"
+  },
+  {
+   "key": "tower_divide_idle_2",
+   "file": "tower-divide-idle-2.webp"
+  },
+  {
+   "key": "tower_divide_idle_3",
+   "file": "tower-divide-idle-3.webp"
+  },
+  {
+   "key": "tower_divide_idle_4",
+   "file": "tower-divide-idle-4.webp"
+  },
+  {
+   "key": "tower_divide_idle_5",
+   "file": "tower-divide-idle-5.webp"
+  },
+  {
+   "key": "tower_divide_idle_6",
+   "file": "tower-divide-idle-6.webp"
+  },
+  {
+   "key": "tower_divide_idle_7",
+   "file": "tower-divide-idle-7.webp"
+  },
+  {
+   "key": "tower_divide_atk_0",
+   "file": "tower-divide-atk-0.webp"
+  },
+  {
+   "key": "tower_divide_atk_1",
+   "file": "tower-divide-atk-1.webp"
+  },
+  {
+   "key": "tower_divide_atk_2",
+   "file": "tower-divide-atk-2.webp"
+  },
+  {
+   "key": "tower_divide_atk_3",
+   "file": "tower-divide-atk-3.webp"
+  },
+  {
+   "key": "tower_divide_atk_4",
+   "file": "tower-divide-atk-4.webp"
+  },
+  {
+   "key": "tower_divide_atk_5",
+   "file": "tower-divide-atk-5.webp"
+  },
+  {
+   "key": "tower_divide_atk_6",
+   "file": "tower-divide-atk-6.webp"
+  },
+  {
+   "key": "tower_divide_atk_7",
+   "file": "tower-divide-atk-7.webp"
+  },
+  {
+   "key": "tower_ice_idle_0",
+   "file": "tower-ice-idle-0.webp"
+  },
+  {
+   "key": "tower_ice_idle_1",
+   "file": "tower-ice-idle-1.webp"
+  },
+  {
+   "key": "tower_ice_idle_2",
+   "file": "tower-ice-idle-2.webp"
+  },
+  {
+   "key": "tower_ice_idle_3",
+   "file": "tower-ice-idle-3.webp"
+  },
+  {
+   "key": "tower_ice_idle_4",
+   "file": "tower-ice-idle-4.webp"
+  },
+  {
+   "key": "tower_ice_idle_5",
+   "file": "tower-ice-idle-5.webp"
+  },
+  {
+   "key": "tower_ice_idle_6",
+   "file": "tower-ice-idle-6.webp"
+  },
+  {
+   "key": "tower_ice_idle_7",
+   "file": "tower-ice-idle-7.webp"
+  },
+  {
+   "key": "tower_ice_atk_0",
+   "file": "tower-ice-atk-0.webp"
+  },
+  {
+   "key": "tower_ice_atk_1",
+   "file": "tower-ice-atk-1.webp"
+  },
+  {
+   "key": "tower_ice_atk_2",
+   "file": "tower-ice-atk-2.webp"
+  },
+  {
+   "key": "tower_ice_atk_3",
+   "file": "tower-ice-atk-3.webp"
+  },
+  {
+   "key": "tower_ice_atk_4",
+   "file": "tower-ice-atk-4.webp"
+  },
+  {
+   "key": "tower_ice_atk_5",
+   "file": "tower-ice-atk-5.webp"
+  },
+  {
+   "key": "tower_ice_atk_6",
+   "file": "tower-ice-atk-6.webp"
+  },
+  {
+   "key": "tower_ice_atk_7",
+   "file": "tower-ice-atk-7.webp"
+  },
+  {
+   "key": "tower_multiply_idle_0",
+   "file": "tower-multiply-idle-0.webp"
+  },
+  {
+   "key": "tower_multiply_idle_1",
+   "file": "tower-multiply-idle-1.webp"
+  },
+  {
+   "key": "tower_multiply_idle_2",
+   "file": "tower-multiply-idle-2.webp"
+  },
+  {
+   "key": "tower_multiply_idle_3",
+   "file": "tower-multiply-idle-3.webp"
+  },
+  {
+   "key": "tower_multiply_idle_4",
+   "file": "tower-multiply-idle-4.webp"
+  },
+  {
+   "key": "tower_multiply_idle_5",
+   "file": "tower-multiply-idle-5.webp"
+  },
+  {
+   "key": "tower_multiply_idle_6",
+   "file": "tower-multiply-idle-6.webp"
+  },
+  {
+   "key": "tower_multiply_idle_7",
+   "file": "tower-multiply-idle-7.webp"
+  },
+  {
+   "key": "tower_multiply_atk_0",
+   "file": "tower-multiply-atk-0.webp"
+  },
+  {
+   "key": "tower_multiply_atk_1",
+   "file": "tower-multiply-atk-1.webp"
+  },
+  {
+   "key": "tower_multiply_atk_2",
+   "file": "tower-multiply-atk-2.webp"
+  },
+  {
+   "key": "tower_multiply_atk_3",
+   "file": "tower-multiply-atk-3.webp"
+  },
+  {
+   "key": "tower_multiply_atk_4",
+   "file": "tower-multiply-atk-4.webp"
+  },
+  {
+   "key": "tower_multiply_atk_5",
+   "file": "tower-multiply-atk-5.webp"
+  },
+  {
+   "key": "tower_multiply_atk_6",
+   "file": "tower-multiply-atk-6.webp"
+  },
+  {
+   "key": "tower_multiply_atk_7",
+   "file": "tower-multiply-atk-7.webp"
+  },
+  {
+   "key": "tower_poison_idle_0",
+   "file": "tower-poison-idle-0.webp"
+  },
+  {
+   "key": "tower_poison_idle_1",
+   "file": "tower-poison-idle-1.webp"
+  },
+  {
+   "key": "tower_poison_idle_2",
+   "file": "tower-poison-idle-2.webp"
+  },
+  {
+   "key": "tower_poison_idle_3",
+   "file": "tower-poison-idle-3.webp"
+  },
+  {
+   "key": "tower_poison_idle_4",
+   "file": "tower-poison-idle-4.webp"
+  },
+  {
+   "key": "tower_poison_idle_5",
+   "file": "tower-poison-idle-5.webp"
+  },
+  {
+   "key": "tower_poison_idle_6",
+   "file": "tower-poison-idle-6.webp"
+  },
+  {
+   "key": "tower_poison_idle_7",
+   "file": "tower-poison-idle-7.webp"
+  },
+  {
+   "key": "tower_poison_atk_0",
+   "file": "tower-poison-atk-0.webp"
+  },
+  {
+   "key": "tower_poison_atk_1",
+   "file": "tower-poison-atk-1.webp"
+  },
+  {
+   "key": "tower_poison_atk_2",
+   "file": "tower-poison-atk-2.webp"
+  },
+  {
+   "key": "tower_poison_atk_3",
+   "file": "tower-poison-atk-3.webp"
+  },
+  {
+   "key": "tower_poison_atk_4",
+   "file": "tower-poison-atk-4.webp"
+  },
+  {
+   "key": "tower_poison_atk_5",
+   "file": "tower-poison-atk-5.webp"
+  },
+  {
+   "key": "tower_poison_atk_6",
+   "file": "tower-poison-atk-6.webp"
+  },
+  {
+   "key": "tower_poison_atk_7",
+   "file": "tower-poison-atk-7.webp"
+  },
+  {
+   "key": "tower_stun_idle_0",
+   "file": "tower-stun-idle-0.webp"
+  },
+  {
+   "key": "tower_stun_idle_1",
+   "file": "tower-stun-idle-1.webp"
+  },
+  {
+   "key": "tower_stun_idle_2",
+   "file": "tower-stun-idle-2.webp"
+  },
+  {
+   "key": "tower_stun_idle_3",
+   "file": "tower-stun-idle-3.webp"
+  },
+  {
+   "key": "tower_stun_idle_4",
+   "file": "tower-stun-idle-4.webp"
+  },
+  {
+   "key": "tower_stun_idle_5",
+   "file": "tower-stun-idle-5.webp"
+  },
+  {
+   "key": "tower_stun_idle_6",
+   "file": "tower-stun-idle-6.webp"
+  },
+  {
+   "key": "tower_stun_idle_7",
+   "file": "tower-stun-idle-7.webp"
+  },
+  {
+   "key": "tower_stun_atk_0",
+   "file": "tower-stun-atk-0.webp"
+  },
+  {
+   "key": "tower_stun_atk_1",
+   "file": "tower-stun-atk-1.webp"
+  },
+  {
+   "key": "tower_stun_atk_2",
+   "file": "tower-stun-atk-2.webp"
+  },
+  {
+   "key": "tower_stun_atk_3",
+   "file": "tower-stun-atk-3.webp"
+  },
+  {
+   "key": "tower_stun_atk_4",
+   "file": "tower-stun-atk-4.webp"
+  },
+  {
+   "key": "tower_stun_atk_5",
+   "file": "tower-stun-atk-5.webp"
+  },
+  {
+   "key": "tower_stun_atk_6",
+   "file": "tower-stun-atk-6.webp"
+  },
+  {
+   "key": "tower_stun_atk_7",
+   "file": "tower-stun-atk-7.webp"
+  },
+  {
+   "key": "tower_cannon_idle_0",
+   "file": "tower-cannon-idle-0.webp"
+  },
+  {
+   "key": "tower_cannon_idle_1",
+   "file": "tower-cannon-idle-1.webp"
+  },
+  {
+   "key": "tower_cannon_idle_2",
+   "file": "tower-cannon-idle-2.webp"
+  },
+  {
+   "key": "tower_cannon_idle_3",
+   "file": "tower-cannon-idle-3.webp"
+  },
+  {
+   "key": "tower_cannon_idle_4",
+   "file": "tower-cannon-idle-4.webp"
+  },
+  {
+   "key": "tower_cannon_idle_5",
+   "file": "tower-cannon-idle-5.webp"
+  },
+  {
+   "key": "tower_cannon_idle_6",
+   "file": "tower-cannon-idle-6.webp"
+  },
+  {
+   "key": "tower_cannon_idle_7",
+   "file": "tower-cannon-idle-7.webp"
+  },
+  {
+   "key": "tower_cannon_atk_0",
+   "file": "tower-cannon-atk-0.webp"
+  },
+  {
+   "key": "tower_cannon_atk_1",
+   "file": "tower-cannon-atk-1.webp"
+  },
+  {
+   "key": "tower_cannon_atk_2",
+   "file": "tower-cannon-atk-2.webp"
+  },
+  {
+   "key": "tower_cannon_atk_3",
+   "file": "tower-cannon-atk-3.webp"
+  },
+  {
+   "key": "tower_cannon_atk_4",
+   "file": "tower-cannon-atk-4.webp"
+  },
+  {
+   "key": "tower_cannon_atk_5",
+   "file": "tower-cannon-atk-5.webp"
+  },
+  {
+   "key": "tower_cannon_atk_6",
+   "file": "tower-cannon-atk-6.webp"
+  },
+  {
+   "key": "tower_cannon_atk_7",
+   "file": "tower-cannon-atk-7.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_idle_0",
+   "file": "tower-skyDestroyer-idle-0.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_idle_1",
+   "file": "tower-skyDestroyer-idle-1.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_idle_2",
+   "file": "tower-skyDestroyer-idle-2.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_idle_3",
+   "file": "tower-skyDestroyer-idle-3.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_idle_4",
+   "file": "tower-skyDestroyer-idle-4.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_idle_5",
+   "file": "tower-skyDestroyer-idle-5.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_idle_6",
+   "file": "tower-skyDestroyer-idle-6.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_idle_7",
+   "file": "tower-skyDestroyer-idle-7.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_atk_0",
+   "file": "tower-skyDestroyer-atk-0.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_atk_1",
+   "file": "tower-skyDestroyer-atk-1.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_atk_2",
+   "file": "tower-skyDestroyer-atk-2.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_atk_3",
+   "file": "tower-skyDestroyer-atk-3.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_atk_4",
+   "file": "tower-skyDestroyer-atk-4.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_atk_5",
+   "file": "tower-skyDestroyer-atk-5.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_atk_6",
+   "file": "tower-skyDestroyer-atk-6.webp"
+  },
+  {
+   "key": "tower_skyDestroyer_atk_7",
+   "file": "tower-skyDestroyer-atk-7.webp"
+  },
+  {
+   "key": "tower_net_idle_0",
+   "file": "tower-net-idle-0.webp"
+  },
+  {
+   "key": "tower_net_idle_1",
+   "file": "tower-net-idle-1.webp"
+  },
+  {
+   "key": "tower_net_idle_2",
+   "file": "tower-net-idle-2.webp"
+  },
+  {
+   "key": "tower_net_idle_3",
+   "file": "tower-net-idle-3.webp"
+  },
+  {
+   "key": "tower_net_idle_4",
+   "file": "tower-net-idle-4.webp"
+  },
+  {
+   "key": "tower_net_idle_5",
+   "file": "tower-net-idle-5.webp"
+  },
+  {
+   "key": "tower_net_idle_6",
+   "file": "tower-net-idle-6.webp"
+  },
+  {
+   "key": "tower_net_idle_7",
+   "file": "tower-net-idle-7.webp"
+  },
+  {
+   "key": "tower_net_atk_0",
+   "file": "tower-net-atk-0.webp"
+  },
+  {
+   "key": "tower_net_atk_1",
+   "file": "tower-net-atk-1.webp"
+  },
+  {
+   "key": "tower_net_atk_2",
+   "file": "tower-net-atk-2.webp"
+  },
+  {
+   "key": "tower_net_atk_3",
+   "file": "tower-net-atk-3.webp"
+  },
+  {
+   "key": "tower_net_atk_4",
+   "file": "tower-net-atk-4.webp"
+  },
+  {
+   "key": "tower_net_atk_5",
+   "file": "tower-net-atk-5.webp"
+  },
+  {
+   "key": "tower_net_atk_6",
+   "file": "tower-net-atk-6.webp"
+  },
+  {
+   "key": "tower_net_atk_7",
+   "file": "tower-net-atk-7.webp"
+  },
+  {
+   "key": "tower_laser_idle_0",
+   "file": "tower-laser-idle-0.webp"
+  },
+  {
+   "key": "tower_laser_idle_1",
+   "file": "tower-laser-idle-1.webp"
+  },
+  {
+   "key": "tower_laser_idle_2",
+   "file": "tower-laser-idle-2.webp"
+  },
+  {
+   "key": "tower_laser_idle_3",
+   "file": "tower-laser-idle-3.webp"
+  },
+  {
+   "key": "tower_laser_idle_4",
+   "file": "tower-laser-idle-4.webp"
+  },
+  {
+   "key": "tower_laser_idle_5",
+   "file": "tower-laser-idle-5.webp"
+  },
+  {
+   "key": "tower_laser_idle_6",
+   "file": "tower-laser-idle-6.webp"
+  },
+  {
+   "key": "tower_laser_idle_7",
+   "file": "tower-laser-idle-7.webp"
+  },
+  {
+   "key": "tower_laser_atk_0",
+   "file": "tower-laser-atk-0.webp"
+  },
+  {
+   "key": "tower_laser_atk_1",
+   "file": "tower-laser-atk-1.webp"
+  },
+  {
+   "key": "tower_laser_atk_2",
+   "file": "tower-laser-atk-2.webp"
+  },
+  {
+   "key": "tower_laser_atk_3",
+   "file": "tower-laser-atk-3.webp"
+  },
+  {
+   "key": "tower_laser_atk_4",
+   "file": "tower-laser-atk-4.webp"
+  },
+  {
+   "key": "tower_laser_atk_5",
+   "file": "tower-laser-atk-5.webp"
+  },
+  {
+   "key": "tower_laser_atk_6",
+   "file": "tower-laser-atk-6.webp"
+  },
+  {
+   "key": "tower_laser_atk_7",
+   "file": "tower-laser-atk-7.webp"
+  },
+  {
+   "key": "tower_multi_shot_idle_0",
+   "file": "tower-multi-shot-idle-0.webp"
+  },
+  {
+   "key": "tower_multi_shot_idle_1",
+   "file": "tower-multi-shot-idle-1.webp"
+  },
+  {
+   "key": "tower_multi_shot_idle_2",
+   "file": "tower-multi-shot-idle-2.webp"
+  },
+  {
+   "key": "tower_multi_shot_idle_3",
+   "file": "tower-multi-shot-idle-3.webp"
+  },
+  {
+   "key": "tower_multi_shot_idle_4",
+   "file": "tower-multi-shot-idle-4.webp"
+  },
+  {
+   "key": "tower_multi_shot_idle_5",
+   "file": "tower-multi-shot-idle-5.webp"
+  },
+  {
+   "key": "tower_multi_shot_idle_6",
+   "file": "tower-multi-shot-idle-6.webp"
+  },
+  {
+   "key": "tower_multi_shot_idle_7",
+   "file": "tower-multi-shot-idle-7.webp"
+  },
+  {
+   "key": "tower_multi_shot_atk_0",
+   "file": "tower-multi-shot-atk-0.webp"
+  },
+  {
+   "key": "tower_multi_shot_atk_1",
+   "file": "tower-multi-shot-atk-1.webp"
+  },
+  {
+   "key": "tower_multi_shot_atk_2",
+   "file": "tower-multi-shot-atk-2.webp"
+  },
+  {
+   "key": "tower_multi_shot_atk_3",
+   "file": "tower-multi-shot-atk-3.webp"
+  },
+  {
+   "key": "tower_multi_shot_atk_4",
+   "file": "tower-multi-shot-atk-4.webp"
+  },
+  {
+   "key": "tower_multi_shot_atk_5",
+   "file": "tower-multi-shot-atk-5.webp"
+  },
+  {
+   "key": "tower_multi_shot_atk_6",
+   "file": "tower-multi-shot-atk-6.webp"
+  },
+  {
+   "key": "tower_multi_shot_atk_7",
+   "file": "tower-multi-shot-atk-7.webp"
+  },
+  {
+   "key": "tower_goldMine_idle_0",
+   "file": "tower-goldMine-idle-0.webp"
+  },
+  {
+   "key": "tower_goldMine_idle_1",
+   "file": "tower-goldMine-idle-1.webp"
+  },
+  {
+   "key": "tower_goldMine_idle_2",
+   "file": "tower-goldMine-idle-2.webp"
+  },
+  {
+   "key": "tower_goldMine_idle_3",
+   "file": "tower-goldMine-idle-3.webp"
+  },
+  {
+   "key": "tower_goldMine_idle_4",
+   "file": "tower-goldMine-idle-4.webp"
+  },
+  {
+   "key": "tower_goldMine_idle_5",
+   "file": "tower-goldMine-idle-5.webp"
+  },
+  {
+   "key": "tower_goldMine_idle_6",
+   "file": "tower-goldMine-idle-6.webp"
+  },
+  {
+   "key": "tower_goldMine_idle_7",
+   "file": "tower-goldMine-idle-7.webp"
+  },
+  {
+   "key": "tower_goldMine_atk_0",
+   "file": "tower-goldMine-atk-0.webp"
+  },
+  {
+   "key": "tower_goldMine_atk_1",
+   "file": "tower-goldMine-atk-1.webp"
+  },
+  {
+   "key": "tower_goldMine_atk_2",
+   "file": "tower-goldMine-atk-2.webp"
+  },
+  {
+   "key": "tower_goldMine_atk_3",
+   "file": "tower-goldMine-atk-3.webp"
+  },
+  {
+   "key": "tower_goldMine_atk_4",
+   "file": "tower-goldMine-atk-4.webp"
+  },
+  {
+   "key": "tower_goldMine_atk_5",
+   "file": "tower-goldMine-atk-5.webp"
+  },
+  {
+   "key": "tower_goldMine_atk_6",
+   "file": "tower-goldMine-atk-6.webp"
+  },
+  {
+   "key": "tower_goldMine_atk_7",
+   "file": "tower-goldMine-atk-7.webp"
+  },
+  {
+   "key": "tower_shredder_idle_0",
+   "file": "tower-shredder-idle-0.webp"
+  },
+  {
+   "key": "tower_shredder_idle_1",
+   "file": "tower-shredder-idle-1.webp"
+  },
+  {
+   "key": "tower_shredder_idle_2",
+   "file": "tower-shredder-idle-2.webp"
+  },
+  {
+   "key": "tower_shredder_idle_3",
+   "file": "tower-shredder-idle-3.webp"
+  },
+  {
+   "key": "tower_shredder_idle_4",
+   "file": "tower-shredder-idle-4.webp"
+  },
+  {
+   "key": "tower_shredder_idle_5",
+   "file": "tower-shredder-idle-5.webp"
+  },
+  {
+   "key": "tower_shredder_idle_6",
+   "file": "tower-shredder-idle-6.webp"
+  },
+  {
+   "key": "tower_shredder_idle_7",
+   "file": "tower-shredder-idle-7.webp"
+  },
+  {
+   "key": "tower_shredder_atk_0",
+   "file": "tower-shredder-atk-0.webp"
+  },
+  {
+   "key": "tower_shredder_atk_1",
+   "file": "tower-shredder-atk-1.webp"
+  },
+  {
+   "key": "tower_shredder_atk_2",
+   "file": "tower-shredder-atk-2.webp"
+  },
+  {
+   "key": "tower_shredder_atk_3",
+   "file": "tower-shredder-atk-3.webp"
+  },
+  {
+   "key": "tower_shredder_atk_4",
+   "file": "tower-shredder-atk-4.webp"
+  },
+  {
+   "key": "tower_shredder_atk_5",
+   "file": "tower-shredder-atk-5.webp"
+  },
+  {
+   "key": "tower_shredder_atk_6",
+   "file": "tower-shredder-atk-6.webp"
+  },
+  {
+   "key": "tower_shredder_atk_7",
+   "file": "tower-shredder-atk-7.webp"
+  },
+  {
+   "key": "tower_repairStation_idle_0",
+   "file": "tower-repairStation-idle-0.webp"
+  },
+  {
+   "key": "tower_repairStation_idle_1",
+   "file": "tower-repairStation-idle-1.webp"
+  },
+  {
+   "key": "tower_repairStation_idle_2",
+   "file": "tower-repairStation-idle-2.webp"
+  },
+  {
+   "key": "tower_repairStation_idle_3",
+   "file": "tower-repairStation-idle-3.webp"
+  },
+  {
+   "key": "tower_repairStation_idle_4",
+   "file": "tower-repairStation-idle-4.webp"
+  },
+  {
+   "key": "tower_repairStation_idle_5",
+   "file": "tower-repairStation-idle-5.webp"
+  },
+  {
+   "key": "tower_repairStation_idle_6",
+   "file": "tower-repairStation-idle-6.webp"
+  },
+  {
+   "key": "tower_repairStation_idle_7",
+   "file": "tower-repairStation-idle-7.webp"
+  },
+  {
+   "key": "tower_repairStation_atk_0",
+   "file": "tower-repairStation-atk-0.webp"
+  },
+  {
+   "key": "tower_repairStation_atk_1",
+   "file": "tower-repairStation-atk-1.webp"
+  },
+  {
+   "key": "tower_repairStation_atk_2",
+   "file": "tower-repairStation-atk-2.webp"
+  },
+  {
+   "key": "tower_repairStation_atk_3",
+   "file": "tower-repairStation-atk-3.webp"
+  },
+  {
+   "key": "tower_repairStation_atk_4",
+   "file": "tower-repairStation-atk-4.webp"
+  },
+  {
+   "key": "tower_repairStation_atk_5",
+   "file": "tower-repairStation-atk-5.webp"
+  },
+  {
+   "key": "tower_repairStation_atk_6",
+   "file": "tower-repairStation-atk-6.webp"
+  },
+  {
+   "key": "tower_repairStation_atk_7",
+   "file": "tower-repairStation-atk-7.webp"
+  },
+  {
+   "key": "tower_copper_idle_0",
+   "file": "tower-copper-idle-0.webp"
+  },
+  {
+   "key": "tower_copper_idle_1",
+   "file": "tower-copper-idle-1.webp"
+  },
+  {
+   "key": "tower_copper_idle_2",
+   "file": "tower-copper-idle-2.webp"
+  },
+  {
+   "key": "tower_copper_idle_3",
+   "file": "tower-copper-idle-3.webp"
+  },
+  {
+   "key": "tower_copper_idle_4",
+   "file": "tower-copper-idle-4.webp"
+  },
+  {
+   "key": "tower_copper_idle_5",
+   "file": "tower-copper-idle-5.webp"
+  },
+  {
+   "key": "tower_copper_idle_6",
+   "file": "tower-copper-idle-6.webp"
+  },
+  {
+   "key": "tower_copper_idle_7",
+   "file": "tower-copper-idle-7.webp"
+  },
+  {
+   "key": "tower_copper_atk_0",
+   "file": "tower-copper-atk-0.webp"
+  },
+  {
+   "key": "tower_copper_atk_1",
+   "file": "tower-copper-atk-1.webp"
+  },
+  {
+   "key": "tower_copper_atk_2",
+   "file": "tower-copper-atk-2.webp"
+  },
+  {
+   "key": "tower_copper_atk_3",
+   "file": "tower-copper-atk-3.webp"
+  },
+  {
+   "key": "tower_copper_atk_4",
+   "file": "tower-copper-atk-4.webp"
+  },
+  {
+   "key": "tower_copper_atk_5",
+   "file": "tower-copper-atk-5.webp"
+  },
+  {
+   "key": "tower_copper_atk_6",
+   "file": "tower-copper-atk-6.webp"
+  },
+  {
+   "key": "tower_copper_atk_7",
+   "file": "tower-copper-atk-7.webp"
+  },
+  {
+   "key": "tower_silver_idle_0",
+   "file": "tower-silver-idle-0.webp"
+  },
+  {
+   "key": "tower_silver_idle_1",
+   "file": "tower-silver-idle-1.webp"
+  },
+  {
+   "key": "tower_silver_idle_2",
+   "file": "tower-silver-idle-2.webp"
+  },
+  {
+   "key": "tower_silver_idle_3",
+   "file": "tower-silver-idle-3.webp"
+  },
+  {
+   "key": "tower_silver_idle_4",
+   "file": "tower-silver-idle-4.webp"
+  },
+  {
+   "key": "tower_silver_idle_5",
+   "file": "tower-silver-idle-5.webp"
+  },
+  {
+   "key": "tower_silver_idle_6",
+   "file": "tower-silver-idle-6.webp"
+  },
+  {
+   "key": "tower_silver_idle_7",
+   "file": "tower-silver-idle-7.webp"
+  },
+  {
+   "key": "tower_silver_atk_0",
+   "file": "tower-silver-atk-0.webp"
+  },
+  {
+   "key": "tower_silver_atk_1",
+   "file": "tower-silver-atk-1.webp"
+  },
+  {
+   "key": "tower_silver_atk_2",
+   "file": "tower-silver-atk-2.webp"
+  },
+  {
+   "key": "tower_silver_atk_3",
+   "file": "tower-silver-atk-3.webp"
+  },
+  {
+   "key": "tower_silver_atk_4",
+   "file": "tower-silver-atk-4.webp"
+  },
+  {
+   "key": "tower_silver_atk_5",
+   "file": "tower-silver-atk-5.webp"
+  },
+  {
+   "key": "tower_silver_atk_6",
+   "file": "tower-silver-atk-6.webp"
+  },
+  {
+   "key": "tower_silver_atk_7",
+   "file": "tower-silver-atk-7.webp"
+  },
+  {
+   "key": "tower_golden_idle_0",
+   "file": "tower-golden-idle-0.webp"
+  },
+  {
+   "key": "tower_golden_idle_1",
+   "file": "tower-golden-idle-1.webp"
+  },
+  {
+   "key": "tower_golden_idle_2",
+   "file": "tower-golden-idle-2.webp"
+  },
+  {
+   "key": "tower_golden_idle_3",
+   "file": "tower-golden-idle-3.webp"
+  },
+  {
+   "key": "tower_golden_idle_4",
+   "file": "tower-golden-idle-4.webp"
+  },
+  {
+   "key": "tower_golden_idle_5",
+   "file": "tower-golden-idle-5.webp"
+  },
+  {
+   "key": "tower_golden_idle_6",
+   "file": "tower-golden-idle-6.webp"
+  },
+  {
+   "key": "tower_golden_idle_7",
+   "file": "tower-golden-idle-7.webp"
+  },
+  {
+   "key": "tower_golden_atk_0",
+   "file": "tower-golden-atk-0.webp"
+  },
+  {
+   "key": "tower_golden_atk_1",
+   "file": "tower-golden-atk-1.webp"
+  },
+  {
+   "key": "tower_golden_atk_2",
+   "file": "tower-golden-atk-2.webp"
+  },
+  {
+   "key": "tower_golden_atk_3",
+   "file": "tower-golden-atk-3.webp"
+  },
+  {
+   "key": "tower_golden_atk_4",
+   "file": "tower-golden-atk-4.webp"
+  },
+  {
+   "key": "tower_golden_atk_5",
+   "file": "tower-golden-atk-5.webp"
+  },
+  {
+   "key": "tower_golden_atk_6",
+   "file": "tower-golden-atk-6.webp"
+  },
+  {
+   "key": "tower_golden_atk_7",
+   "file": "tower-golden-atk-7.webp"
+  },
+  {
+   "key": "tower_ultimate_idle_0",
+   "file": "tower-ultimate-idle-0.webp"
+  },
+  {
+   "key": "tower_ultimate_idle_1",
+   "file": "tower-ultimate-idle-1.webp"
+  },
+  {
+   "key": "tower_ultimate_idle_2",
+   "file": "tower-ultimate-idle-2.webp"
+  },
+  {
+   "key": "tower_ultimate_idle_3",
+   "file": "tower-ultimate-idle-3.webp"
+  },
+  {
+   "key": "tower_ultimate_idle_4",
+   "file": "tower-ultimate-idle-4.webp"
+  },
+  {
+   "key": "tower_ultimate_idle_5",
+   "file": "tower-ultimate-idle-5.webp"
+  },
+  {
+   "key": "tower_ultimate_idle_6",
+   "file": "tower-ultimate-idle-6.webp"
+  },
+  {
+   "key": "tower_ultimate_idle_7",
+   "file": "tower-ultimate-idle-7.webp"
+  },
+  {
+   "key": "tower_ultimate_atk_0",
+   "file": "tower-ultimate-atk-0.webp"
+  },
+  {
+   "key": "tower_ultimate_atk_1",
+   "file": "tower-ultimate-atk-1.webp"
+  },
+  {
+   "key": "tower_ultimate_atk_2",
+   "file": "tower-ultimate-atk-2.webp"
+  },
+  {
+   "key": "tower_ultimate_atk_3",
+   "file": "tower-ultimate-atk-3.webp"
+  },
+  {
+   "key": "tower_ultimate_atk_4",
+   "file": "tower-ultimate-atk-4.webp"
+  },
+  {
+   "key": "tower_ultimate_atk_5",
+   "file": "tower-ultimate-atk-5.webp"
+  },
+  {
+   "key": "tower_ultimate_atk_6",
+   "file": "tower-ultimate-atk-6.webp"
+  },
+  {
+   "key": "tower_ultimate_atk_7",
+   "file": "tower-ultimate-atk-7.webp"
+  },
+  {
+   "key": "tower_transcendent_idle_0",
+   "file": "tower-transcendent-idle-0.webp"
+  },
+  {
+   "key": "tower_transcendent_idle_1",
+   "file": "tower-transcendent-idle-1.webp"
+  },
+  {
+   "key": "tower_transcendent_idle_2",
+   "file": "tower-transcendent-idle-2.webp"
+  },
+  {
+   "key": "tower_transcendent_idle_3",
+   "file": "tower-transcendent-idle-3.webp"
+  },
+  {
+   "key": "tower_transcendent_idle_4",
+   "file": "tower-transcendent-idle-4.webp"
+  },
+  {
+   "key": "tower_transcendent_idle_5",
+   "file": "tower-transcendent-idle-5.webp"
+  },
+  {
+   "key": "tower_transcendent_idle_6",
+   "file": "tower-transcendent-idle-6.webp"
+  },
+  {
+   "key": "tower_transcendent_idle_7",
+   "file": "tower-transcendent-idle-7.webp"
+  },
+  {
+   "key": "tower_transcendent_atk_0",
+   "file": "tower-transcendent-atk-0.webp"
+  },
+  {
+   "key": "tower_transcendent_atk_1",
+   "file": "tower-transcendent-atk-1.webp"
+  },
+  {
+   "key": "tower_transcendent_atk_2",
+   "file": "tower-transcendent-atk-2.webp"
+  },
+  {
+   "key": "tower_transcendent_atk_3",
+   "file": "tower-transcendent-atk-3.webp"
+  },
+  {
+   "key": "tower_transcendent_atk_4",
+   "file": "tower-transcendent-atk-4.webp"
+  },
+  {
+   "key": "tower_transcendent_atk_5",
+   "file": "tower-transcendent-atk-5.webp"
+  },
+  {
+   "key": "tower_transcendent_atk_6",
+   "file": "tower-transcendent-atk-6.webp"
+  },
+  {
+   "key": "tower_transcendent_atk_7",
+   "file": "tower-transcendent-atk-7.webp"
+  },
+  {
+   "key": "castle_keep_idle_0",
+   "file": "castle-keep-idle-0.webp"
+  },
+  {
+   "key": "castle_keep_idle_1",
+   "file": "castle-keep-idle-1.webp"
+  },
+  {
+   "key": "castle_keep_idle_2",
+   "file": "castle-keep-idle-2.webp"
+  },
+  {
+   "key": "castle_keep_idle_3",
+   "file": "castle-keep-idle-3.webp"
+  },
+  {
+   "key": "castle_keep_idle_4",
+   "file": "castle-keep-idle-4.webp"
+  },
+  {
+   "key": "castle_keep_idle_5",
+   "file": "castle-keep-idle-5.webp"
+  },
+  {
+   "key": "castle_keep_idle_6",
+   "file": "castle-keep-idle-6.webp"
+  },
+  {
+   "key": "castle_keep_idle_7",
+   "file": "castle-keep-idle-7.webp"
+  },
+  {
+   "key": "tower_meteor_idle_0",
+   "file": "tower-meteor-idle-0.webp"
+  },
+  {
+   "key": "tower_meteor_idle_1",
+   "file": "tower-meteor-idle-1.webp"
+  },
+  {
+   "key": "tower_meteor_idle_2",
+   "file": "tower-meteor-idle-2.webp"
+  },
+  {
+   "key": "tower_meteor_idle_3",
+   "file": "tower-meteor-idle-3.webp"
+  },
+  {
+   "key": "tower_meteor_idle_4",
+   "file": "tower-meteor-idle-4.webp"
+  },
+  {
+   "key": "tower_meteor_idle_5",
+   "file": "tower-meteor-idle-5.webp"
+  },
+  {
+   "key": "tower_meteor_idle_6",
+   "file": "tower-meteor-idle-6.webp"
+  },
+  {
+   "key": "tower_meteor_idle_7",
+   "file": "tower-meteor-idle-7.webp"
+  },
+  {
+   "key": "tower_meteor_atk_0",
+   "file": "tower-meteor-atk-0.webp"
+  },
+  {
+   "key": "tower_meteor_atk_1",
+   "file": "tower-meteor-atk-1.webp"
+  },
+  {
+   "key": "tower_meteor_atk_2",
+   "file": "tower-meteor-atk-2.webp"
+  },
+  {
+   "key": "tower_meteor_atk_3",
+   "file": "tower-meteor-atk-3.webp"
+  },
+  {
+   "key": "tower_meteor_atk_4",
+   "file": "tower-meteor-atk-4.webp"
+  },
+  {
+   "key": "tower_meteor_atk_5",
+   "file": "tower-meteor-atk-5.webp"
+  },
+  {
+   "key": "tower_meteor_atk_6",
+   "file": "tower-meteor-atk-6.webp"
+  },
+  {
+   "key": "tower_meteor_atk_7",
+   "file": "tower-meteor-atk-7.webp"
   }
  ]
 }
