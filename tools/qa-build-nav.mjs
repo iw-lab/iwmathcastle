@@ -6,7 +6,7 @@
 // 사용: node tools/qa-build-nav.mjs [포트=8939]
 
 import { createServer } from "http";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, readdirSync } from "fs";
 import { join, extname, dirname } from "path";
 import { fileURLToPath } from "url";
 import puppeteer from "puppeteer";
@@ -101,7 +101,9 @@ try {
     }
   });
   const walkFrames = flap.filter((f) => /monster-bat-walk-\d\.webp/.test(f)).sort();
-  check("박쥐 날갯짓 4프레임 전부 그려짐", walkFrames.length === 4, walkFrames.join(", ") || "없음");
+  // 프레임 수는 디스크가 정본(뼈대 리그 후 4 → 8장) — 숫자를 박아 두면 프레임을 늘릴 때마다 거짓 빨강이 난다
+  const onDisk = readdirSync(join(ROOT, "assets")).filter((f) => /^monster-bat-walk-\d\.webp$/.test(f)).length;
+  check(`박쥐 날갯짓 ${onDisk}프레임 전부 그려짐`, onDisk >= 4 && walkFrames.length === onDisk, walkFrames.join(", ") || "없음");
 
   // ① 건설창 열기
   check("E로 건설창 열림", await openBuildPanel());

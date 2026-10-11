@@ -636,6 +636,7 @@ function setupHowToPlay() {
       writeHowToPrefs(p);
     }
     hideModal(modal);
+    maybeHintWizardUpgrade(); // 창이 떠 있는 동안 미뤄 둔 알림
   };
 
   document.getElementById("closeHowToPlayBtn")?.addEventListener("click", close);
@@ -1643,6 +1644,9 @@ function createDamageText(target, text, type = "normal") {
 // --- 레이아웃 및 요소 생성 ---
 function regenerateLayout() {
   if (!gameInitialized) return;
+  // 바 실측 캐시는 «지금» 버린다. 이벤트 시점에만 버리면 디바운스 250ms 사이 렌더 루프가
+  // 전환 도중의 바 위치를 다시 캐시해, 그 옛 높이로 길을 깔았다.
+  invalidatePlayfieldBounds();
   resetBuildProcess();
   hideModal(gameElements.towerUpgradeSelector);
   gameElements.rangeIndicator.style.display = "none";
@@ -1670,6 +1674,26 @@ function regenerateLayout() {
   }
 
   relocateTowersToValidTiles();
+  layoutKey = currentLayoutKey();
+}
+
+// 레이아웃 자가치유(2026-10-11 «자동최대화였다가 나갔다 왔더니 경로가 달라짐») —
+// 폰에서 전체화면이 풀리거나 앱을 오가면 resize 가 빠지거나 중간 크기로 온다. 그러면 길이 옛 높이로
+// 남아 아래 줄이 컨트롤 바 밑에 숨었다. 이벤트를 믿지 않고 렌더 루프가 1초마다 화면·바 위치를 재서
+// 마지막으로 깐 레이아웃과 다르면 다시 깐다. 시험 = tools/qa-layout-heal.mjs(이벤트를 삼켜 재현).
+let layoutKey = "";
+let layoutCheckAt = 0;
+function currentLayoutKey() {
+  const pf = playfieldBounds();
+  return `${window.innerWidth}x${window.innerHeight}|${pf.top}|${pf.bottom}`;
+}
+function healLayoutIfStale(timestamp) {
+  if (!gameInitialized || !layoutKey || timestamp - layoutCheckAt < 1000) return;
+  layoutCheckAt = timestamp;
+  if (currentLayoutKey() !== layoutKey) {
+    invalidatePlayfieldBounds();
+    if (currentLayoutKey() !== layoutKey) debouncedRegenerateLayout();
+  }
 }
 
 // 길이 움직이면(창 크기 변경·레이아웃 개편·예전 세이브 불러오기) 예전 자리에
@@ -2277,6 +2301,7 @@ function gameLoop(timestamp) {
   // v5: 예외 1회로 루프가 영구 정지하지 않도록 — 재예약은 무조건 (finally)
   try {
     feedFrameTime(rawDeltaTime); // 저사양 런타임 감지
+    healLayoutIfStale(timestamp);
     if (!gamePaused) {
       // v9: 히트스톱 — 남은 시간은 실시간으로 재고(교착 방지), 그동안 시뮬 전체를
       //     느리게 흘린다. gameClock도 같이 느려지므로 연출·쿨다운·스폰이 한 몸으로 움직인다.
@@ -5800,6 +5825,19 @@ function setupEventListeners() {
   gameElements.startWaveBtn.addEventListener("click", startWave);
   document.getElementById("pauseBtn").addEventListener("click", togglePause);
   const fullscreenBtn = document.getElementById("fullscreenBtn");
+  // 🖼️ 하나로는 무슨 버튼인지 몰랐다(2026-10-11 «수동 최대화 버튼도 있어야지?» — 이미 있었는데 못 찾음).
+  // 글자로 상태를 말한다. 전체화면을 못 하는 기기(아이폰 사파리)에선 숨긴다.
+  const paintFullscreenBtn = () => {
+    const on = ui.isFullscreen();
+    fullscreenBtn.innerHTML = `${on ? "↩️ 작게" : "🔍 크게"}<span class="key-hint">F</span>`;
+    fullscreenBtn.setAttribute("aria-label", on ? "전체화면 끝내기" : "전체화면으로 크게 보기");
+    fullscreenBtn.title = on ? "전체화면 끝내기 (F)" : "전체화면으로 크게 보기 (F)";
+    fullscreenBtn.classList.toggle("fs-off", !on);
+  };
+  if (!ui.fullscreenSupported()) fullscreenBtn.style.display = "none";
+  paintFullscreenBtn();
+  document.addEventListener("fullscreenchange", paintFullscreenBtn);
+  document.addEventListener("webkitfullscreenchange", paintFullscreenBtn);
   fullscreenBtn.addEventListener("click", (e) => {
     e.preventDefault();
     sfx.play("blip");
@@ -6095,6 +6133,10 @@ function maybeHintWizardUpgrade() {
   if (!gameRunning || gamePaused) return;
   if (wizardHintShownAtLevel === wizardLevel) return;
   if (gold < simCore.wizardUpgradeCost(wizardLevel)) return;
+  // 사용법 창이 떠 있으면 미룬다 — 첫 판에 이 알림이 사용법 창 한가운데(타워 짓기 줄)를 덮었다(2026-10-11 실측).
+  //   «보여 줌» 표시를 안 남기니 창을 닫은 뒤 다음 UI 갱신에서 뜬다.
+  const howto = gameElements.howToPlayModal;
+  if (howto?.classList.contains("show")) return;
   wizardHintShownAtLevel = wizardLevel;
   const next = ui.nextSpellAtLevel(wizardLevel + 1);
   showMessage(

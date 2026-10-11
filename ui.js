@@ -692,15 +692,27 @@ export function hideTowerInfoTooltip() {
   }
 }
 
+// 전체화면 토글. 자동 전체화면(requestGameFullscreen)과 같은 대상(documentElement)을 쓴다 —
+// 예전엔 gameContent 만 키워서 그 밖의 창(설정·랭킹)이 전체화면에서 안 보일 수 있었다.
+export function fullscreenSupported() {
+  const el = document.documentElement;
+  return !!(el.requestFullscreen || el.webkitRequestFullscreen);
+}
+export function isFullscreen() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
 export function toggleFullScreen() {
-  const gameContentEl = gameElements.gameContent;
-  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-    if (gameContentEl.requestFullscreen)
-      gameContentEl
-        .requestFullscreen()
+  const el = document.documentElement;
+  if (!isFullscreen()) {
+    if (el.requestFullscreen)
+      el.requestFullscreen({ navigationUI: "hide" })
         .catch((err) => showMessage(`전체화면 오류: ${err.message}`));
-    else if (gameContentEl.webkitRequestFullscreen)
-      gameContentEl.webkitRequestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    try {
+      screen.orientation?.lock?.("landscape").catch(() => {});
+    } catch {
+      /* 미지원 */
+    }
   } else {
     if (document.exitFullscreen) document.exitFullscreen();
     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
