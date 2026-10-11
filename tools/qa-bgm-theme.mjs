@@ -38,5 +38,22 @@ try {
   block = "gameplay-canyon.mp3";
   { const { ctx, st } = await start("5-1"); await sl(1500); const c = await st(); ok(c.synth, `곡 파일 404 → 절차 합성으로 대체(무음 아님 · synth=${c.synth})`); await ctx.close(); }
   block = null;
+  // ④ 폰처럼 엄격한 자동재생 정책(제스처 필수) — 진짜 탭으로 시작해도 곡이 나야 한다(2026-10-11 폰 «bgm 안 들려»)
+  const strict = await puppeteer.launch({ headless: "shell", executablePath: `${process.env.HOME}/.cache/puppeteer/chrome-headless-shell/mac_arm-150.0.7871.24/chrome-headless-shell-mac-arm64/chrome-headless-shell`, args: ["--no-sandbox", "--autoplay-policy=user-gesture-required", "--mute-audio"] });
+  try {
+    for (const noPrime of [false, true]) {
+      const pg = await strict.newPage(); await pg.setViewport({ width: 915, height: 412, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }); await seedSkipHowTo(pg);
+      await pg.goto(`http://localhost:${PORT}/`, { waitUntil: "networkidle0", timeout: 30000 }); await sl(800);
+      if (noPrime) await pg.evaluate(() => window.__mathcastle.qaDisablePrime());
+      await pg.tap('.difficulty-btn[data-difficulty="6-1"]'); await sl(3000);
+      const a = await pg.evaluate(() => window.__mathcastle.getState().bgm);
+      if (!noPrime) ok(a.src === "gameplay-volcano.mp3" && !a.paused && a.ctx === "running", `폰 정책: 판 시작 탭만으로 화산 곡이 난다(${JSON.stringify(a)})`);
+      else {
+        await pg.tap("#tpAtk"); await sl(1200); const b = await pg.evaluate(() => window.__mathcastle.getState().bgm);
+        ok(b.src === "gameplay-volcano.mp3" && !b.paused && b.t > 0.3, `폰 정책: 시작 때 거절돼도 다음 탭에서 곡이 되살아난다(시작 ${a.src || "합성"} → 탭 뒤 ${b.src} ${b.t.toFixed(2)}초)`);
+      }
+      await pg.close();
+    }
+  } finally { await strict.close(); }
 } finally { await browser.close(); server.close(); }
 console.log(bad ? `❌ bgm-theme ${bad}` : "✅ bgm-theme"); process.exit(bad ? 1 : 0);

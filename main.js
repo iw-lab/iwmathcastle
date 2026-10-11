@@ -358,6 +358,10 @@ let lastFocusScanPos = { x: -9999, y: -9999 };
 const BUILD_REACH = 46; // 타일 중심에서 이 거리(px) 안이면 건설 가능
 let lastActionHint = "";
 let battleTrack = "gameplay";   // 배경 테마별 전투 곡(initializeGame 이 정한다)
+/** 학년 → 전투 곡(배경 테마와 같은 표: 3·4 풀밭 · 5 협곡 · 6 화산) */
+function themeTrackFor(difficulty) {
+  return { 3: "gameplay-meadow", 4: "gameplay-meadow", 5: "gameplay-canyon", 6: "gameplay-volcano" }[parseInt(difficulty, 10)] || "gameplay";
+}
 let actionHintAt = 0;
 const HINT_TOUCH_MS = 3500;
 
@@ -924,6 +928,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // v5 QA 훅 (고유 전역 키 — window.game 금지 교훈). 프로덕션에서도 무해(읽기+시전 테스트용).
   window.__mathcastle = {
+    // 오디오 QA(tools/qa-bgm-theme.mjs) — 허락받기(prime)를 끄고 «다음 탭에서 되살아나는가»를 잰다
+    qaDisablePrime: () => { musicSystem.prime = () => {}; },
     getState: () => ({
       gold, castleHealth, currentWave, wizardLevel, activeSpell, gameMode,
       monsters: monsters.length, towers: towers.length,
@@ -934,7 +940,7 @@ window.addEventListener("DOMContentLoaded", () => {
       // (안 보이면 게이트가 그 회귀를 못 잡는다 — 실제로 교차검증이 그 사각지대를 지적했다)
       spellCooldowns: { ...wizardCooldowns },
       wizard: { x: Math.round(wizardPosition.x), y: Math.round(wizardPosition.y) }, buildStep,   // 폰 조작 QA(tools/qa-touchpad.mjs)
-      bgm: { track: musicSystem.currentTrack, src: musicSystem._trackEl?.src?.split('/').pop() || null, t: musicSystem._trackEl?.currentTime || 0, paused: musicSystem._trackEl ? musicSystem._trackEl.paused : null, synth: !!musicSystem.schedulerTimer },   // 테마 BGM QA(tools/qa-bgm-theme.mjs)
+      bgm: { track: musicSystem.currentTrack, src: musicSystem._trackEl?.src?.split('/').pop() || null, t: musicSystem._trackEl?.currentTime || 0, paused: musicSystem._trackEl ? musicSystem._trackEl.paused : null, synth: !!musicSystem.schedulerTimer, ctx: musicSystem.ctx ? musicSystem.ctx.state : null },   // 테마 BGM QA(tools/qa-bgm-theme.mjs)
       autoCooldownUntil: WIZARD_AUTO_ATTACK_STATS.cooldownUntil || 0,
     }),
     // 폰 배치 QA(tools/qa-phone-layout.mjs): 길 끝점·성 상자·실제로 그린 성 영역·축척
@@ -1264,16 +1270,21 @@ window.addEventListener("DOMContentLoaded", () => {
   initSchoolPicker(); renderSchoolPanel();   // v11 학교 대항전
 
   // [V2] 첫 사용자 인터랙션에서 음악 시작
-  const startMusicOnce = () => {
-    musicSystem.init().then(() => {
-      musicSystem.play("menu");
-      musicSystem.setIntensity(0.4);
-    });
-    document.removeEventListener("click", startMusicOnce);
-    document.removeEventListener("touchstart", startMusicOnce);
+  // v11.3(2026-10-11 폰 «bgm 안 들려»): touchstart 는 브라우저의 «사용자 활성화»가 아니다 — 거기서 만든 오디오는 멈춘 채로
+  //   남았고, 리스너를 첫 번에 떼서 다시 깨울 기회도 없었다. 활성화 이벤트마다(가볍다) unlock 해 멈춘 소리를 되살린다.
+  let musicStarted = false;
+  const onUserGesture = (e) => {
+    musicSystem.unlock();
+    // 판 시작 단추: 그 판의 테마 전투 곡·보스 곡을 이 제스처 안에서 미리 허락받는다(실제 재생은 로딩 뒤)
+    const db = e && e.type === "click" && e.target && e.target.closest && e.target.closest(".difficulty-btn");
+    if (db) musicSystem.prime([themeTrackFor(db.dataset.difficulty), "boss"]);
+    if (!musicStarted) {
+      musicStarted = true;
+      if (!musicSystem.currentTrack) { musicSystem.play("menu"); musicSystem.setIntensity(0.4); }
+    }
   };
-  document.addEventListener("click", startMusicOnce);
-  document.addEventListener("touchstart", startMusicOnce);
+  for (const ev of ["pointerup", "touchend", "click", "keydown"]) document.addEventListener(ev, onUserGesture, { capture: true, passive: true });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && musicSystem.ctx && musicSystem.ctx.state !== "running") musicSystem.ctx.resume().catch(() => {}); });
 
   setupEventListeners();
 
@@ -1329,7 +1340,7 @@ async function initializeGame(difficulty, savedState = null) {
   {
     const bgKey = { 3: "bg_meadow", 4: "bg_meadow", 5: "bg_canyon", 6: "bg_volcano" }[parseInt(difficulty, 10)];
     // 전투 BGM 도 배경 테마를 따른다(2026-10-10 «bgm 몇 개 넣자») — 풀밭·협곡·화산 3곡(game-assets-src/bgm, gen-bgm.sh)
-    battleTrack = { bg_meadow: "gameplay-meadow", bg_canyon: "gameplay-canyon", bg_volcano: "gameplay-volcano" }[bgKey] || "gameplay";
+    battleTrack = themeTrackFor(difficulty);
     // v8: 이 학년에 필요한 것부터 받고, 후반 전용 몬스터는 백그라운드로 이어 받는다.
     //     스프라이트가 아직 없으면 렌더러가 절차적 드로잉으로 폴백하므로 안전하다.
     if (!window.__spritesReady) window.__spritesReady = preloadSprites("assets", bgKey);

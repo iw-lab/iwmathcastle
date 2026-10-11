@@ -539,6 +539,7 @@ export class MusicSystem {
       /* 아직 메타데이터 전이면 무시 — 어차피 처음부터 난다 */
     }
     this._trackEl = el;
+    el.muted = false;
     // 자동재생 정책 등으로 거절될 수 있다. 이걸 조용히 삼키면 **완전 무음**이 된다 —
     // 파일도 안 나고, play()는 이미 성공으로 알고 절차 합성도 안 켰기 때문이다.
     // (게다가 currentTrack이 세팅돼 있어 같은 트랙 재요청은 dedup에 걸려 재시도도 없다.)
@@ -568,6 +569,44 @@ export class MusicSystem {
       );
     }
     return true;
+  }
+
+  /**
+   * 실제 사용자 활성화 이벤트(click·touchend·pointerup·keydown) 안에서 «동기로» 부른다(2026-10-11 «bgm 안 들려» 폰 실측).
+   *  ① AudioContext 가 멈춰 있으면 깨운다 — touchstart 에서 만든 컨텍스트는 활성화가 아니라 suspended 로 남는다
+   *  ② 파일 곡이 자동재생 정책에 거절돼(NotAllowedError — 판 시작은 이미지 로딩 await 뒤라 제스처가 끊긴다) 절차 합성으로
+   *     떨어져 있으면, 이 제스처 안에서 파일 곡으로 다시 튼다. 몇 번을 불러도 된다(이미 나고 있으면 아무것도 안 한다).
+   */
+  unlock() {
+    if (!this.ctx) this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state !== "running") this.ctx.resume().catch(() => {});
+    const name = this.currentTrack;
+    if (!this.isPlaying || !name || this._trackFailed.has(name)) return;
+    if (name === "victory" || name === "defeat" || name === "wave_clear") return;
+    const el = this._trackEl;
+    if (el && !el.paused) return;
+    this._stopScheduler();
+    this._playTrackStream(name);
+  }
+
+  /**
+   * 제스처 안에서 곡 element 를 한 번 «틀었다 바로 멈춰» 허락받아 둔다(iOS·엄격한 자동재생 정책은 element 마다 첫 재생에 제스처가 필요).
+   * 판 시작 단추를 누른 그 순간에 그 판의 전투 곡·보스 곡을 미리 허락받는다 — 실제 재생은 로딩 await 뒤라 제스처가 끊겨 있다.
+   */
+  prime(names) {
+    if (!this.ctx) this.init();
+    if (!this.ctx) return;
+    for (const n of names) {
+      if (this._trackFailed.has(n) || (this._trackEl && this._trackEl === this._trackEls.get(n))) continue;
+      const el = this._getTrackEl(n);
+      if (!el) continue;
+      el.muted = true;   // 허락만 받는다 — 메뉴 곡 위로 한 토막 새지 않게
+      const pr = el.play();
+      const done = () => { if (this._trackEl !== el) el.pause(); el.muted = false; };
+      if (pr && pr.then) pr.then(done).catch(() => { el.muted = false; });
+      else done();
+    }
   }
 
   _stopTrackNode() {
