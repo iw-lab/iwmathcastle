@@ -874,7 +874,7 @@ function renderReport() {
     q.innerHTML = ui.formatMath(e.q);
     const h = document.createElement("span");
     h.className = "review-hint";
-    h.textContent = `💡 ${learnLoop.getSolutionHint(e.q, e.a)}`;
+    h.innerHTML = `💡 ${ui.formatMath(learnLoop.getSolutionHint(e.q, e.a))}`;
     d.append(q, document.createElement("br"), h);
     reviewEl.appendChild(d);
   }
@@ -5325,7 +5325,7 @@ function checkAnswer(answer, clickedBtn) {
       currentProblem ? currentProblem.q : "",
       correctAnswer,
     );
-    resultDiv.textContent = `오답! 💡 ${hint}`;
+    resultDiv.innerHTML = `오답! 💡 ${ui.formatMath(hint)}`;
     resultDiv.style.color = "#ff3366";
     // v9: 3/4까지 채운 문제를 틀리면 상자가 1번으로 되돌아간다(라이트너의 핵심).
     //     그 순간이 아이에게 가장 아픈 지점이라, 되돌아간다는 사실을 숨기지 않되
@@ -5434,7 +5434,7 @@ function handleTimeOut() {
     currentProblem ? currentProblem.q : "",
     correctAnswer,
   );
-  resultDiv.textContent = `⏰ 시간 초과! 💡 ${toHint}`;
+  resultDiv.innerHTML = `⏰ 시간 초과! 💡 ${ui.formatMath(toHint)}`;
   resultDiv.style.color = "#ff8c00";
   if (currentProblem)
     learnLoop.recordWrong(currentProblem, currentWave, isNoteReviewProblem);
@@ -5651,7 +5651,7 @@ function checkGameOver() {
             .slice(0, 8)
             .map(
               (w) =>
-                `<div class="wn-item"><b>${ui.formatMath(w.q)}</b><br><span class="wn-hint">💡 ${learnLoop.getSolutionHint(w.q, w.a)}</span></div>`,
+                `<div class="wn-item"><b>${ui.formatMath(w.q)}</b><br><span class="wn-hint">💡 ${ui.formatMath(learnLoop.getSolutionHint(w.q, w.a))}</span></div>`,
             )
             .join("") +
           (wrongs.length > 8 ? `<div class="wn-more">…외 ${wrongs.length - 8}문제</div>` : "");
