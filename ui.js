@@ -1,4 +1,5 @@
 // ui.js
+// @gb-frac @gb-frac-fn formatMath — 분수를 위아래로 쌓아 그리는 렌더러는 formatMath()(아래, v5.6)
 
 // 파일 분리에 따른 import 구문 수정
 import { gameElements, isTouchLike } from "./constants.js";
