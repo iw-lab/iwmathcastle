@@ -213,6 +213,7 @@ export async function onRequestPost(context) {
       // TOP 5 밖 전체를 지우면 몇 건이 동시에 들어와도 항상 5건으로 수렴한다.
       await db
         .prepare(
+          // gb-scan-ok: 매 INSERT 직후 TOP5 밖을 바로 지우는 설계라 표가 상시 ≤6행(고정 크기) — NOT IN 은 색인으로 못 줄여도 안전.
           "DELETE FROM hall_of_fame WHERE id NOT IN (SELECT id FROM hall_of_fame ORDER BY score DESC, id ASC LIMIT 5)",
         )
         .run();

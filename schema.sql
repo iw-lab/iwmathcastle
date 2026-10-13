@@ -40,6 +40,11 @@ CREATE INDEX IF NOT EXISTS idx_rankings_week ON rankings(week_key, score DESC);
 CREATE INDEX IF NOT EXISTS idx_rankings_month ON rankings(month_key, score DESC);
 CREATE INDEX IF NOT EXISTS idx_hof_score ON hall_of_fame(score DESC);
 CREATE INDEX IF NOT EXISTS idx_submit_log_ip_ts ON submit_log(ip, ts);
+-- 0004: 무료 읽기 한도 — GROUP BY name(주/월 랭킹)이 week/month 전용 색인을 못 타고 표를 훑던 문제
+CREATE INDEX IF NOT EXISTS idx_rankings_week_name_score ON rankings(week_key, name, score DESC);
+CREATE INDEX IF NOT EXISTS idx_rankings_month_name_score ON rankings(month_key, name, score DESC);
+-- submit_log 청소(DELETE ... WHERE ts < ?)가 ip 선두 복합색인을 못 타 표 전체를 훑던 문제
+CREATE INDEX IF NOT EXISTS idx_submit_log_ts ON submit_log(ts);
 -- 세션 청소(DELETE ... WHERE created_at < ?)가 풀스캔이 되지 않게 (발급 엔드포인트 DoS 방어)
 CREATE INDEX IF NOT EXISTS idx_sessions_created ON sessions(created_at);
 

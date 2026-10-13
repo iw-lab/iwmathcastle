@@ -48,12 +48,14 @@ export async function onRequestGet(context) {
           .all(),
         db
           .prepare(
+            // gb-scan-ok: idx_rankings_week_name_score(week_key,name,score DESC)가 WHERE·GROUP BY 받침, 남는 정렬은 그 주 제출분만(0004)
             "SELECT name, MAX(score) AS score, wave, difficulty FROM rankings WHERE week_key = ? GROUP BY name ORDER BY score DESC LIMIT 50",
           )
           .bind(weekKey)
           .all(),
         db
           .prepare(
+            // gb-scan-ok: idx_rankings_month_name_score(month_key,name,score DESC)가 WHERE·GROUP BY 받침, 남는 정렬은 그 달 제출분만(0004)
             "SELECT name, MAX(score) AS score, wave, difficulty FROM rankings WHERE month_key = ? GROUP BY name ORDER BY score DESC LIMIT 50",
           )
           .bind(monthKey)
