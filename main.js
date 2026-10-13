@@ -5614,7 +5614,7 @@ function checkGameOver() {
       let learnLine = modal.querySelector(".learn-report");
       if (!learnLine) {
         learnLine = document.createElement("div");
-        learnLine.className = "learn-report";
+        learnLine.className = "learn-report"; learnLine.setAttribute("data-frac-ok", ""); // «정답률 50% (15/30)» = 진행 칸, 분수 아님
         learnLine.style.cssText = "margin-top:8px;font-size:15px;color:#ffd166;";
         const anchor = modal.querySelector("#finalWave")?.parentElement;
         (anchor || modal.firstElementChild || modal).appendChild(learnLine);
