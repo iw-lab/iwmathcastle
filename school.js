@@ -43,14 +43,46 @@ export async function renderSchoolPanel() {
     body.appendChild(me);
     if (j.mine?.rank > 1 && j.mine.gap > 0) body.appendChild(el("p", "school-gap", `⬆ 위 학교까지 ${j.mine.gap}점!`));
   }
+  const panel = document.getElementById("schoolPanel"), all = j.top || [];
+  if (panel) { panel.dataset.gb = "school-rank"; panel.dataset.gbV = "1.4"; panel.dataset.gbN = String(all.length); }
+  // 첫 화면 통계 줄 — 합계 숫자뿐. 이 게임엔 기기 번호가 없어(닉네임·학교·사람을 잇지 않는 설계) «참여 기기»는 못 센다 → 학교 점수가 오른 판 기준
+  const st = j.stats, fmt = (v) => (typeof v === "number" ? v.toLocaleString("ko-KR") : "–");
+  const stats = el("div", "gb-stats"); stats.dataset.gb = "hub-stats";
+  for (const [k, v] of [["참여 학교", st?.schools], ["오늘 이용", st?.today], ["오늘 판", st?.playsToday], ["누적 판", st?.plays]]) {
+    const c = el("span"); c.append(el("b", null, fmt(v)), el("small", null, k)); stats.appendChild(c);
+  }
+  body.appendChild(stats);
   const ol = el("ol", "school-list");
-  (j.top || []).slice(0, 5).forEach((r, i) => {
+  all.slice(0, 5).forEach((r, i) => {
     const li = el("li", "school-row" + (s && r.code === s.code ? " mine" : ""));
     li.append(el("span", "school-medal", ["🥇", "🥈", "🥉"][i] || `${i + 1}`), el("span", "school-name", r.name), el("span", "school-pts", `${r.points}점`));
     ol.appendChild(li);
   });
   if (!(j.top || []).length) ol.appendChild(el("li", "school-row empty", "이번 주 아직 점수가 없어요 — 첫 학교가 되어 보세요!"));
   body.appendChild(ol);
+  if (all.length > 5) {
+    const more = el("button", "rank-more gb-more", `전체 순위 보기 · ${all.length.toLocaleString("ko-KR")}개 학교`);
+    more.type = "button"; more.dataset.gbAct = "more"; more.addEventListener("click", () => openRankAll(all));
+    body.appendChild(more);
+  }
+}
+
+/** 전체 순위 창 — 서버가 준 학교를 끝까지(최대 500). 우리 학교 강조·스크롤 · 닫기 */
+function openRankAll(all) {
+  const modal = document.getElementById("rankAllModal"), list = document.getElementById("rankAllList"), s = mySchool();
+  if (!modal || !list) return;
+  list.textContent = "";
+  let me = null;
+  all.forEach((r, i) => {
+    const li = el("li", "school-row" + (s && r.code === s.code ? " mine" : ""));
+    li.append(el("span", "school-medal", String(i + 1)), el("span", "school-name", r.name), el("span", "school-pts", `${r.points}점`));
+    if (s && r.code === s.code) me = li;
+    list.appendChild(li);
+  });
+  modal.classList.add("show");
+  document.getElementById("rankAllCloseBtn").onclick = () => modal.classList.remove("show");
+  modal.onclick = (e) => { if (e.target === modal) modal.classList.remove("show"); };
+  if (me) me.scrollIntoView({ block: "center" });
 }
 
 /** 학교 고르기 창(검색 → 목록에서 탭) */

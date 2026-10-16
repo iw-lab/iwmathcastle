@@ -14,7 +14,7 @@ import {
   normalizeDifficulty,
   hashIp,
 } from "./_util.js";
-import { isCode, runPoints, SCHOOL, SCHOOL_SCHEMA } from "./_school.js";
+import { isCode, runPoints, SCHOOL, ensureSchool, grantStatements } from "./_school.js";
 // v11 모드 — 일반 판만 개인 랭킹(일·주·월·명예의 전당)에 오른다. 모드마다 점수의 뜻이 달라 같은 표에 섞으면 불공정하다.
 const MODES = new Set(["normal", "bossrush", "blitz", "chaos"]);
 
@@ -162,7 +162,7 @@ export async function onRequestPost(context) {
     let schoolGranted = 0;
     if (isCode(school)) {
       try {
-        await db.batch(SCHOOL_SCHEMA.map((q) => db.prepare(q)));
+        await ensureSchool(db);
         const known = await db.prepare("SELECT code FROM schools WHERE code = ?").bind(String(school)).first();
         const want = runPoints(sw);
         if (known && want > 0) {
@@ -174,13 +174,10 @@ export async function onRequestPost(context) {
             const cur = (await db.prepare("SELECT points FROM school_daily WHERE who = ? AND day_key = ?").bind(ip, dayKey).first())?.points || 0;
             const grant = Math.max(0, Math.min(want, SCHOOL.DAY_CAP - cur));
             if (grant <= 0) break;
-            const [up] = await db.batch([
-              db.prepare("UPDATE school_daily SET points = points + ? WHERE who = ? AND day_key = ? AND points = ?").bind(grant, ip, dayKey, cur),
-              db.prepare("INSERT INTO school_points (code, week_key, points, runs) SELECT ?, ?, ?, 1 WHERE changes() > 0 ON CONFLICT(code, week_key) DO UPDATE SET points = points + excluded.points, runs = runs + 1").bind(String(school), weekKeyOf(dayKey), grant),
-            ]);
+            const [up] = await db.batch(grantStatements(db, { ip, dayKey, cur, grant, school: String(school), week: weekKeyOf(dayKey) }));
             if (up.meta?.changes > 0) schoolGranted = grant;
           }
-          if (schoolGranted) try { context.waitUntil(caches.default.delete(new Request(`${new URL(request.url).origin}/api/school-board/v1/${weekKeyOf(dayKey)}`))); } catch {}
+          if (schoolGranted) try { context.waitUntil(caches.default.delete(new Request(`${new URL(request.url).origin}/api/school-board/v2/${weekKeyOf(dayKey)}`))); } catch {}
         }
       } catch (e) { console.error("school points error:", e); }   // 학교 점수 실패가 개인 기록 등록을 막지 않는다
     }
