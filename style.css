@@ -3847,6 +3847,28 @@ body.is-touch kbd {
     text-decoration: underline;
 }
 
+/* 선행쌤 — 첫 화면(메인 메뉴) 맨 아래 작은 알약 링크 */
+.gb-sitelink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    margin: 14px auto 0;
+    width: fit-content;
+    max-width: 94%;
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--text-dim);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    text-decoration: none;
+    text-align: center;
+}
+.gb-sitelink:hover { color: var(--accent-cyan); border-color: var(--accent-cyan); }
+
 /* ---------- v8: 전역 오류 안내 (boot.js가 만든다) ---------- */
 /* 예외가 국소 try/catch 밖에서 터지면 그동안 아이 화면엔 멈춘 게임만 남았다.
    무슨 일인지 한 줄로 알려주고 새로고침 버튼 하나를 준다. */
