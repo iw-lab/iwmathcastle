@@ -3847,27 +3847,38 @@ body.is-touch kbd {
     text-decoration: underline;
 }
 
-/* 선행쌤 — 첫 화면(메인 메뉴) 맨 아래 작은 알약 링크 */
-.gb-sitelink {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 44px;
-    margin: 14px auto 0;
-    width: fit-content;
-    max-width: 94%;
-    padding: 8px 18px;
-    border-radius: 999px;
-    border: 1px solid var(--text-dim);
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--text-dim);
-    font-size: 12px;
-    font-weight: 600;
-    font-family: var(--font-body);
-    text-decoration: none;
-    text-align: center;
+/* 선행쌤 — 첫 화면(메인 메뉴) 위쪽 반짝이는 배너 */
+.gb-site {
+    position: relative; overflow: hidden; display: flex; align-items: center; gap: 12px;
+    width: 100%; min-height: 56px; margin: 12px 0 10px; padding: 10px 14px; box-sizing: border-box;
+    border-radius: 16px; text-decoration: none; color: #fff;
+    background: linear-gradient(110deg, #6d28d9, #db2777, #f97316, #db2777, #6d28d9); background-size: 300% 100%;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .35) inset, 0 8px 24px rgba(219, 39, 119, .45);
+    animation: gb-site-flow 7s linear infinite;
 }
-.gb-sitelink:hover { color: var(--accent-cyan); border-color: var(--accent-cyan); }
+.gb-site::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .45) 50%, transparent 70%);
+    transform: translateX(-120%); animation: gb-site-shine 3.2s ease-in-out infinite;
+}
+.gb-site-ic {
+    display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0;
+    border-radius: 12px; background: rgba(255, 255, 255, .22); animation: gb-site-pop 1.6s ease-in-out infinite;
+}
+.gb-site-ic svg { width: 24px; height: 24px; }
+.gb-site-tx { display: flex; flex-direction: column; min-width: 0; flex: 1; text-align: left; line-height: 1.25; text-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
+.gb-site-tx b { font-size: 18px; font-weight: 900; letter-spacing: -.01em; }
+.gb-site-tx small { font-size: 13px; font-weight: 600; opacity: .95; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gb-site-go { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; min-height: 36px; padding: 0 12px; border-radius: 999px; background: #fff; color: #be185d; font-weight: 800; font-size: 13px; }
+.gb-site-go svg { width: 14px; height: 14px; }
+.gb-site:hover, .gb-site:focus-visible { filter: brightness(1.08); box-shadow: 0 0 0 2px #fff inset, 0 10px 30px rgba(219, 39, 119, .6); }
+@keyframes gb-site-flow { to { background-position: 300% 0; } }
+@keyframes gb-site-shine { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+@keyframes gb-site-pop { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.12) rotate(-8deg); } }
+@media (prefers-reduced-motion: reduce) { .gb-site, .gb-site::after, .gb-site-ic { animation: none; } }
+/* 모달·가로회전 안내 속 배너는 폭이 좁아 세로로 눌릴 수 있어 줄바꿈을 막는다 */
+.modal .gb-site, #rotateNotice .gb-site { width: 100%; min-height: 56px; }
+.modal .gb-site-tx small, #rotateNotice .gb-site-tx small { white-space: normal; }
 
 /* ---------- v8: 전역 오류 안내 (boot.js가 만든다) ---------- */
 /* 예외가 국소 try/catch 밖에서 터지면 그동안 아이 화면엔 멈춘 게임만 남았다.
