@@ -26,5 +26,7 @@ for i in $(seq 1 20); do
 done
 [ "$live" = "data-build=\"$B\"" ] || { echo "✖ 라이브($live) ≠ $B"; exit 5; }
 for p in tools/qa-smoke.mjs game-assets-src/gen-batch.sh screenshots/smoke-1-menu.png; do
-  c=$(curl -s -o /dev/null -w "%{http_code}" "https://mathcastle.pages.dev/$p"); [ "$c" = 404 ] || echo "⚠ 아직 열림: /$p ($c)"
+  # Pages 는 없는 경로에 index.html 을 200 으로 돌려준다 — 빌드 표식이 보이면 파일이 아니라 첫 화면이다
+  body=$(curl -s -m 10 "https://mathcastle.pages.dev/$p" | head -c 400 | tr -d '\0' || true)
+  case "$body" in *"data-build=\""*) ;; "") ;; *) echo "⚠ 아직 열림: /$p";; esac
 done
