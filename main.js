@@ -38,18 +38,17 @@ import {
 } from "./utils.js";
 import { sfx } from "./sfx.js";
 import {
-  initializeFirebase,
   submitScore,
-  fetchAndShowRankings,
-  refreshRankingPanel,
   startGameSession,
 } from "./firebase.js";
 import * as ui from "./ui.js";
 import { generateNickname, isGeneratedNick } from "./nickname.js";
 
-// ---------- v7: 랭킹 닉네임 (개인정보 미수집) ----------
-// 실명 입력을 없앤 이유는 nickname.js 상단 주석 참고. 뽑은 닉네임은 이 기기에만
-// 저장되어 다음 판에도 같은 이름으로 랭킹에 오른다(서버에 계정은 없다).
+// ---------- v12: 학교 점수 적립용 내부 식별자(화면에 안 보인다) ----------
+// v7 당시엔 개인 랭킹에 쓸 닉네임을 화면에 보여줬지만, 이제 닉네임 개인 랭킹판은
+// 전부 제거했다(school-hub 일괄 전환). 이 값은 /api/submit-score 가 "유효한 이름
+// 형식"을 요구해서(그래야 서버가 기존 학교 점수 채점 로직을 그대로 태울 수 있다)
+// 배경에서만 쓰고, 화면 어디에도 그리지 않는다.
 const NICK_KEY = "mathcastle:nick";
 
 function currentNickname() {
@@ -69,11 +68,6 @@ function rerollNickname() {
     localStorage.setItem(NICK_KEY, n);
   } catch {}
   return n;
-}
-
-function paintNickname(n) {
-  const el = document.getElementById("playerNickname");
-  if (el) el.textContent = n;
 }
 
 // --- [V2] 새 모듈 임포트 ---
@@ -769,31 +763,9 @@ function renderDailyPanel() {
     : "도전 하나를 깰 때마다 다음 판 집중력이 올라가요.";
 }
 
-// ---------- v10: 첫 화면 랭킹 패널 ----------
-// 「항상 보이게」라서 갱신도 계속 돌 뻔했다. 그런데 방치된 탭이 조용히 API 를 때리는 것은
-// 이 저장소 계열에서 이미 값을 치른 버그다 — **메뉴가 떠 있고 탭이 보일 때만** 돈다.
-const RANK_PANEL_POLL_MS = 90e3;
-let rankPanelTimer = null;
-
-function menuIsOnScreen() {
-  const m = document.getElementById("difficultyModal");
-  return !!m && m.style.display !== "none" && !m.hidden;
-}
-
-function tickRankingPanel() {
-  if (document.visibilityState !== "visible") return; // 백그라운드에선 건너뛴다
-  if (!menuIsOnScreen()) return; // 게임 중엔 안 본다
-  refreshRankingPanel({ maxAgeMs: RANK_PANEL_POLL_MS - 5e3 });
-}
-
-function startRankingPanelAutoRefresh() {
-  if (rankPanelTimer) return;
-  rankPanelTimer = setInterval(tickRankingPanel, RANK_PANEL_POLL_MS);
-  // 탭으로 돌아왔을 때는 다음 주기를 기다리지 않는다 — 그동안 순위가 바뀌었을 수 있다.
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") tickRankingPanel();
-  });
-}
+// ---------- v12: 첫 화면 랭킹 패널 제거 ----------
+// 닉네임 개인 랭킹판(패널 폴링 포함)을 전부 뺐다 — 첫 화면 순위는 이제 학교 대항전
+// (school.js renderSchoolPanel)만 보여준다.
 
 // ---------- v8: 학습 기록 ----------
 function setupReportModal() {
@@ -1249,18 +1221,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // categorizeAnswers()는 학년 선택 후 initializeGame에서 실행 (문제 동적 로드 이후)
   ui.initializeUI(handleBuildStep);
 
-  initializeFirebase((isReady) => {
-    document.getElementById("showRankingBtn").disabled = !isReady;
-    // 같은 모달을 여는 버튼이 둘인데 한쪽만 잠그면 잠금이 아니다(grok 교차검증 지적)
-    const more = document.getElementById("rankPanelMore");
-    if (more) more.disabled = !isReady;
-  });
-
-  // v10: 첫 화면 랭킹 패널. **초기화 준비 플래그에 매달지 않는다**(codex 교차검증 지적) —
-  //      /api/rankings 는 인증이 필요 없는 읽기 API다. 여기에 묶어 두면 나중에 초기화가
-  //      실패하도록 바뀌는 날, 멀쩡히 뜨는 랭킹이 「불러오는 중…」에서 영영 멈춘다.
-  refreshRankingPanel();
-  startRankingPanelAutoRefresh();
+  // v12: 닉네임 개인 랭킹 준비 토글·첫 화면 랭킹 패널 제거(학교 대항전으로 일괄 전환).
 
   // [V2] 메뉴 파티클 & 음악
   initMenuParticles();
@@ -5568,8 +5529,14 @@ function checkGameOver() {
     }
     document.getElementById("finalScore").textContent = score;
     document.getElementById("finalWave").textContent = currentWave;
-    // v11 학교 대항전: 학교를 골랐으면 판이 끝날 때 자동으로 등록한다(학교 점수는 등록해야 들어간다 — 버튼을 몰라 놓치지 않게)
-    if (mySchool()) setTimeout(() => { const b = document.getElementById("submitScoreBtn"); if (b && !b.disabled && gameElements.gameOverModal.classList.contains("show")) b.click(); }, 1500);
+    // v11 학교 대항전 + v12: 닉네임 개인 랭킹 화면은 없앴지만, 학교 점수는 여전히 이 호출(submitScore)
+    // 로만 들어간다(functions/api/submit-score.js 가 school 코드를 같이 받아 학교 합계에 더하는
+    // 유일한 경로다 — 지우면 학교 점수 적립이 전부 멈춘다). 그래서 보이는 버튼을 누르지 않고
+    // 배경에서 바로 부른다. 닉네임은 서버가 요구하는 유효성 검사용 값일 뿐 화면에 그리지 않는다.
+    if (mySchool()) setTimeout(() => {
+      if (!gameElements.gameOverModal.classList.contains("show")) return;
+      submitScore(currentNickname(), score, currentWave, selectedDifficulty, gameMode).catch(() => {});
+    }, 1500);
 
     // v9: 이번 판이 무엇을 남겼는지 **게임오버 화면에서만** 보여준다.
     //   ⚠️ 플레이 중 "최고 기록까지 N웨이브" 카운트다운은 일부러 넣지 않았다.
@@ -5697,7 +5664,6 @@ function checkGameOver() {
     // [V2] 게임 오버 음악
     musicSystem.play("defeat");
 
-    paintNickname(currentNickname()); // v7: 랭킹에 올라갈 닉네임을 미리 보여준다
     showModal(gameElements.gameOverModal);
   }
 }
@@ -5746,40 +5712,8 @@ function forceNextWave(isFromError = false) {
   }
 }
 
-async function saveAndSubmit() {
-  if (!gameRunning) {
-    showMessage("게임이 실행 중이지 않습니다.");
-    return;
-  }
-
-  // v7: prompt() 자유 입력 폐지 — 이 기기의 닉네임을 그대로 쓴다(개인정보 미수집).
-  const finalPlayerName = currentNickname();
-
-  try {
-    await submitScore(finalPlayerName, score, currentWave, selectedDifficulty, gameMode);
-
-    gameRunning = false;
-    stopSpawnLoop();
-    // 여기서 예외가 나면 게임 루프는 이미 멈춘 뒤라 점수 표시·게임오버 모달까지
-    // 도달하지 못하고 화면이 그대로 굳는다(사파리 프라이빗 모드 등).
-    // 세이브 정리 실패는 게임오버 화면을 막을 만한 일이 아니다.
-    try {
-      localStorage.removeItem("towerDefenseSave");
-      localStorage.removeItem("mathcastle:save");
-    } catch (e) {
-      console.warn("세이브 정리 실패:", e);
-    }
-
-    showMessage("랭킹 등록 완료! 메인 화면으로 돌아갑니다.");
-    setTimeout(restartGame, 1500);
-  } catch (error) {
-    console.error("점수 등록 실패:", error);
-    saveGame();
-    showMessage(
-      "점수 등록에 실패했습니다. 하지만 게임 진행 상황은 안전하게 저장되었습니다. 나중에 다시 시도해주세요.",
-    );
-  }
-}
+// v12: saveAndSubmit()(조기 종료 + 닉네임 개인 랭킹 등록, "🏆 랭킹 등록 후 종료" 단추) 제거.
+//      학교 점수는 checkGameOver()의 배경 submitScore 호출로 자연 게임오버 때 그대로 적립된다.
 
 function loadGame() {
   const savedState = readSavedState();
@@ -5844,15 +5778,6 @@ function setupEventListeners() {
     debouncedRegenerateLayout,
   );
 
-  document.getElementById("showRankingBtn").addEventListener("click", () => {
-    sfx.init().then(() => sfx.play("blip"));
-    fetchAndShowRankings();
-  });
-  // v10: 패널의 「전체 보기」도 같은 모달로 — 주간·월간·학년 필터는 거기 있다
-  document.getElementById("rankPanelMore")?.addEventListener("click", () => {
-    sfx.init().then(() => sfx.play("blip"));
-    fetchAndShowRankings();
-  });
   document.querySelectorAll(".difficulty-btn").forEach((btn) =>
     btn.addEventListener("click", (e) => {
       if (gameInitialized) return;
@@ -5918,40 +5843,9 @@ function setupEventListeners() {
   document
     .getElementById("restartGameBtn")
     .addEventListener("click", restartGame);
-  document
-    .getElementById("restartFromRankingBtn")
-    .addEventListener("click", restartGame);
-  // v7: 닉네임 다시 뽑기
-  const rerollBtn = document.getElementById("rerollNickBtn");
-  if (rerollBtn)
-    rerollBtn.addEventListener("click", () => {
-      paintNickname(rerollNickname());
-      sfx.play("blip");
-    });
+  // v12: 닉네임 다시 뽑기·점수 등록·랭킹 등록 후 종료 단추 제거(닉네임 개인 랭킹판 폐지).
+  //      학교 점수는 checkGameOver()의 배경 submitScore 호출로 그대로 적립된다.
 
-  document
-    .getElementById("submitScoreBtn")
-    .addEventListener("click", async () => {
-      const playerName = currentNickname(); // v7: 뽑은 닉네임만 전송
-      const btn = document.getElementById("submitScoreBtn");
-      btn.disabled = true;
-      btn.textContent = "등록 중...";
-      try {
-        await submitScore(playerName, score, currentWave, selectedDifficulty, gameMode);
-        localStorage.removeItem("towerDefenseSave");
-        localStorage.removeItem("mathcastle:save");
-        showMessage("랭킹 등록 완료!");
-        sfx.play("powerup");
-        // Show rankings after submission
-        fetchAndShowRankings();
-      } catch (error) {
-        console.error("점수 등록 실패:", error);
-        showMessage("점수 등록에 실패했습니다. 다시 시도해주세요.");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "등록";
-      }
-    });
   document
     .getElementById("closeTowerUpgradeBtn")
     .addEventListener("click", closeUpgradeSelector);
@@ -5961,10 +5855,6 @@ function setupEventListeners() {
     .addEventListener("click", () => forceNextWave(false));
 
   document.getElementById("loadGameBtn").addEventListener("click", loadGame);
-
-  document
-    .getElementById("submitAndQuitBtn")
-    .addEventListener("click", saveAndSubmit);
 
   document.getElementById("spellbook-btn").addEventListener("click", () => {
     const spellSelector = document.getElementById("spellSelector");
@@ -6443,11 +6333,8 @@ function restartGame() {
   resetFlashBudget();
   renderDailyPanel(); // v8: 오늘의 도전 진행이 바뀌었을 수 있다
   renderModeOptions(); renderSchoolPanel();   // v11: 모드 기록·학교 순위가 바뀌었을 수 있다
-  // v10: 방금 내 점수가 올라갔을 수 있다 — 캐시를 건너뛰고 새로 받는다
-  refreshRankingPanel();
   hideModal(gameElements.gameOverModal);
   hideModal(document.getElementById("stageSelectModal"));
-  hideModal(gameElements.rankingModal);
   ui.showDifficultySelector();
   gameInitialized = false;
   safeCleanupAllElements();

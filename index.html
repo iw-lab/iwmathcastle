@@ -91,9 +91,6 @@
                     <button class="menu-btn" id="loadGameBtn" disabled>
                         <span class="btn-icon">💾</span> 이어하기
                     </button>
-                    <button class="menu-btn" id="showRankingBtn" disabled>
-                        <span class="btn-icon">🏆</span> 랭킹 보기
-                    </button>
                     <button class="menu-btn" id="showAchievementsBtn">
                         <span class="btn-icon">🎖️</span> 업적
                     </button>
@@ -125,17 +122,8 @@
                     <ul class="daily-list" id="dailyList"></ul>
                     <p class="daily-note" id="dailyNote"></p>
                 </div>
-                <!-- v10: 랭킹을 첫 화면에 상주시킨다. 예전엔 「🏆 랭킹 보기」를 눌러야 모달이
-                     떴는데, 누르지 않은 아이에겐 랭킹이 없는 게임이었다. 여기 top 5 를 늘
-                     띄워 두고, 자세한 순위(주간·월간·학년 필터)는 그대로 모달이 맡는다. -->
-                <div class="rank-panel" id="rankPanel">
-                    <div class="rank-head">
-                        <span class="rank-title" id="rankPanelTitle">🏆 오늘의 랭킹</span>
-                        <button class="rank-more" id="rankPanelMore" type="button">전체 보기</button>
-                    </div>
-                    <ol class="rank-list" id="rankPanelList"></ol>
-                    <p class="rank-note" id="rankPanelNote">불러오는 중…</p>
-                </div>
+                <!-- v12: 닉네임 개인 랭킹 패널 제거(학교 대항전으로 일괄 전환) — 옛 마크업은
+                     rules-lazy 작업 로그 참고, 되살리지 않는다. -->
                 </aside>
                 </div>
                 <!-- v7: 개인정보 미수집 고지 (불특정 다수 초등학생 공개 대비) -->
@@ -231,7 +219,6 @@
                 </div>
                 <div class="control-right">
                     <button class="ctrl-btn save-btn" id="saveGameBtn" title="게임 저장" aria-label="게임 저장">💾<span class="key-hint">Q</span></button>
-                    <button class="ctrl-btn" id="submitAndQuitBtn" title="랭킹 등록 후 종료" aria-label="랭킹 등록">🏆</button>
                     <button class="ctrl-btn" id="settingsBtnInGame" title="설정" aria-label="설정">⚙️</button>
                     <button class="ctrl-btn" id="fullscreenBtn" title="전체화면" aria-label="전체화면 전환">🖼️<span class="key-hint">F</span></button>
                 </div>
@@ -324,16 +311,9 @@
                         <span class="stat-value" id="finalCombo">0</span>
                     </div>
                 </div>
-                <!-- v7: 자유 입력 폐지. "이름을 입력하세요"는 초등학생에게 실명을 쓰게 만들고,
-                     그 실명이 공개 랭킹에 게시된다. 이제 닉네임을 뽑아 쓰기만 한다. -->
-                <div class="nick-row">
-                    <span class="nick-label">내 닉네임</span>
-                    <output class="nick-value" id="playerNickname" aria-live="polite">—</output>
-                    <button type="button" class="nick-reroll" id="rerollNickBtn">🎲 다시 뽑기</button>
-                </div>
-                <p class="nick-note">랭킹에는 이 닉네임만 올라가요. 진짜 이름은 쓰지 않아요 🙂</p>
+                <!-- v12: 닉네임 표시·개인 점수 등록 제거(학교 대항전으로 일괄 전환) — 학교
+                     점수는 게임 오버 시 자동으로 적립된다(아래 checkGameOver 참고). -->
                 <div class="modal-actions">
-                    <button class="modal-btn primary" id="submitScoreBtn">점수 등록</button>
                     <button class="modal-btn" id="retryStageBtn">🔁 스테이지부터 다시</button>
                     <button class="modal-btn" id="restartGameBtn">다시 시작</button>
                 </div>
@@ -352,7 +332,7 @@
             </div>
         </div>
 
-        <!-- ===== 랭킹 모달 ===== -->
+        <!-- ===== 학교 고르기 모달 ===== -->
         <!-- v11: 학교 고르기 — 공식 목록(NEIS) 검색 결과에서 «누르기만» 한다(학교 이름을 직접 써서 저장하지 않는다) -->
         <div class="modal" id="schoolModal" role="dialog" aria-modal="true" aria-labelledby="schoolModalTitle">
             <div class="modal-content school-modal">
@@ -375,47 +355,7 @@
                 <button class="modal-btn" id="rankAllCloseBtn" type="button">닫기</button>
             </div>
         </div>
-        <div class="modal" id="rankingModal">
-            <div class="modal-content ranking-modal">
-                <h2 class="modal-title">🏆 랭킹</h2>
-
-                <div class="grade-filter" id="gradeFilter">
-                    <button class="gf-btn active" data-grade="0">전체</button>
-                    <button class="gf-btn" data-grade="3">3학년</button>
-                    <button class="gf-btn" data-grade="4">4학년</button>
-                    <button class="gf-btn" data-grade="5">5학년</button>
-                    <button class="gf-btn" data-grade="6">6학년</button>
-                </div>
-
-                <div class="hall-of-fame-container">
-                    <h3 class="hof-title">명예의 전당</h3>
-                    <div class="hall-of-fame" id="hallOfFame"></div>
-                </div>
-
-                <div class="ranking-tabs">
-                    <button class="tab-btn active" data-tab="today">오늘</button>
-                    <button class="tab-btn" data-tab="yesterday">어제</button>
-                    <button class="tab-btn" data-tab="week">주간</button>
-                    <button class="tab-btn" data-tab="month">월간</button>
-                </div>
-
-                <div id="ranking-timer" class="ranking-timer"></div>
-
-                <div id="todayRanking" class="ranking-content active">
-                    <ul id="todayRankingList" class="ranking-list"></ul>
-                </div>
-                <div id="yesterdayRanking" class="ranking-content">
-                    <ul id="yesterdayRankingList" class="ranking-list"></ul>
-                </div>
-                <div id="weekRanking" class="ranking-content">
-                    <ul id="weekRankingList" class="ranking-list"></ul>
-                </div>
-                <div id="monthRanking" class="ranking-content">
-                    <ul id="monthRankingList" class="ranking-list"></ul>
-                </div>
-                <button class="modal-btn" id="restartFromRankingBtn">게임 다시하기</button>
-            </div>
-        </div>
+        <!-- v12: 닉네임 개인 랭킹 모달 제거(학교 대항전으로 일괄 전환). -->
 
         <!-- ===== 업적 모달 ===== -->
         <div class="modal" id="achievementModal">

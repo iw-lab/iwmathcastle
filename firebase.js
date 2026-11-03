@@ -103,16 +103,14 @@ export async function submitScore(playerName, score, wave, difficulty, mode = "n
   } else {
     showMessage("점수가 등록되었습니다!");
   }
+  // v12: 닉네임 개인 랭킹 UI(점수 등록 단추·랭킹 모달)를 전부 없앴다 — 이 함수는 이제
+  //      checkGameOver()의 배경 호출(학교 점수 적립)로만 쓰인다. 지워진 #submitScoreBtn·
+  //      랭킹 모달을 계속 건드리면 성공 때마다 여기서 조용히 예외가 나 게임오버 모달을
+  //      닫는 줄까지 못 간다 — 그 두 참조만 뺀다.
   try {
-    document.getElementById("submitScoreBtn").disabled = true;
     ui.hideGameOverModal();
-    // 🔴 방금 내 점수가 서버에 들어갔다 — 캐시를 반드시 버린다(grok 교차검증 지적).
-    //    안 버리면 등록 직후 뜨는 랭킹이 최대 15초 전 것이라 **내 점수가 없다.**
-    //    아이가 가장 확인하고 싶은 순간에 없는 것으로 보인다.
-    invalidateRankingCache();
-    await fetchAndShowRankings();
   } catch (e) {
-    console.error("랭킹 표시 오류:", e);
+    console.error("게임오버 모달 닫기 오류:", e);
   }
   return true;
 }

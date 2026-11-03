@@ -22,7 +22,6 @@ export const gameElements = {
   towerUpgradeSelector: document.getElementById("towerUpgradeSelector"),
   mathModal: document.getElementById("mathModal"),
   gameOverModal: document.getElementById("gameOverModal"),
-  rankingModal: document.getElementById("rankingModal"),
   startWaveBtn: document.getElementById("startWaveBtn"),
   tooltip: document.getElementById("tower-info-tooltip"),
   // [V2] 새 요소들
