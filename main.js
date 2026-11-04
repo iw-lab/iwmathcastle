@@ -3175,7 +3175,7 @@ function updateMonsters(timestamp, deltaTime) {
     if (!isStunned) {
       monster.pathIndex += monster.currentSpeed * (deltaTime / 16.66);
       if (monster.pathIndex >= pathPoints.length - 1) {
-        castleHealth -= simCore.LEAK_DAMAGE;
+        castleHealth = Math.max(0, castleHealth - simCore.LEAK_DAMAGE);   // 0 아래로 내려가 «❤️ -8» 이 뜨던 것(실플레이 실측)
         waveDamageTaken += simCore.LEAK_DAMAGE;
         score = Math.max(0, score - 75);
         sfx.play("castle_hit");
